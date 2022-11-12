@@ -4,6 +4,7 @@
 #include <string>
 #include "sqlite3.h"
 #include <unordered_set>
+#include <vector>
 
 constexpr char g_filename[] = "data.db";
 constexpr unsigned int g_version = 1;
