@@ -1,7 +1,5 @@
 #include "db.h"
 #include <iostream>
-#include <format>
-
 
 // https://videlais.com/2018/12/13/c-with-sqlite3-part-3-inserting-and-selecting-data/
 
@@ -39,8 +37,10 @@ int infoTableCallback(void* notUsed, int argc, char** argv, char** colName)
 void SQLDatabase::getWishes(std::string tableName, std::vector<wishEntry> &wishList)
 {
 	sqlite3_stmt* stmt;
-	std::string command = std::format("SELECT * FROM {};", tableName);
-	int rc = sqlite3_prepare_v2(connectionHandle, command.c_str(), -1, &stmt, NULL);
+
+	char command[64];
+	sprintf(command, "SELECT * FROM %s;", tableName.c_str());
+	int rc = sqlite3_prepare_v2(connectionHandle, command, -1, &stmt, NULL);
 
 	if (rc != SQLITE_OK) {
 		std::cout << "error: " << sqlite3_errmsg(connectionHandle);
@@ -77,10 +77,10 @@ void SQLDatabase::getWishes(std::string tableName, std::vector<wishEntry> &wishL
 void SQLDatabase::insertWish(std::string tableName, wishEntry wish)
 {
 	char* errMsg = 0;
-	std::string command = std::format("INSERT INTO {}(itemType, itemName, timeReceived, itemRarity) "
-		"VALUES(\"{}\",\"{}\",\"{}\",\"{}\");",
-		tableName, wish.itemType, wish.itemName, wish.date, wish.itemRarity);
-	int rc = sqlite3_exec(connectionHandle, command.c_str(), callback, 0, &errMsg);
+	char command[256];
+	sprintf(command, "INSERT INTO %s(itemType, itemName, timeReceived, itemRarity) VALUES(\"%s\",\"%s\",\"%s\",\"%u\");",
+		tableName.c_str(), wish.itemType.c_str(), wish.itemName.c_str(), wish.date.c_str(), wish.itemRarity);
+	int rc = sqlite3_exec(connectionHandle, command, callback, 0, &errMsg);
 	if (rc != SQLITE_OK)
 	{
 		// error occured
@@ -97,9 +97,10 @@ void SQLDatabase::insertWishes(std::string tableName, std::vector<wishEntry> wis
 	
 	for (auto &wish : wishVec)
 	{
-		commands.push_back(std::format("INSERT INTO {}(itemType, itemName, timeReceived, itemRarity) "
-			"VALUES(\"{}\",\"{}\",\"{}\",\"{}\");",
-			tableName, wish.itemType, wish.itemName, wish.date, wish.itemRarity));
+		char command[256];
+		sprintf(command, "INSERT INTO %s(itemType, itemName, timeReceived, itemRarity) VALUES(\"%s\",\"%s\",\"%s\",\"%u\");",
+			tableName.c_str(), wish.itemType.c_str(), wish.itemName.c_str(), wish.date.c_str(), wish.itemRarity);
+		commands.push_back(command);
 	}
 	commands.push_back("COMMIT;");
 
