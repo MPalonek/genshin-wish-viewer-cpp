@@ -72,7 +72,6 @@ private:
 	const logLevel m_level;
 
 	std::deque<std::string> m_queue;
-	const size_t m_queueMaxSize = 10; //TODO not used currently
 	std::mutex m_queueMutex;
 
 	std::thread m_writerThread;	// thread

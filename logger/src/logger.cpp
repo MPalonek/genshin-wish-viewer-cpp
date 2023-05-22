@@ -43,7 +43,7 @@ void Logger::addLog(std::string callerName, std::string msg, logLevel level)
 		std::lock_guard lock(m_queueMutex);
 		std::string log = serializeTimePoint(m_clock.now()) + " [" + logLevelStr[level] + "] " + callerName + ": " + msg;
 		m_queue.emplace_back(std::move(log));
-		std::cout << m_queue.back() << std::endl;
+		//std::cout << m_queue.back() << std::endl;
 		// Could unlock before notifing
 		m_cv.notify_one();
 	}
@@ -85,18 +85,32 @@ void Logger::writerLoop()
 {
 	while (true)
 	{
-		// Wait until main() sends data
+		// Wait until we get enough entries in queue (or timeout) to write to file
 		// cv.wait _Predicate if true, then thread wakes up  
 		std::unique_lock lock(m_queueMutex);
-		m_cv.wait(lock, [&] {
-			return (!m_queue.empty() || m_shutdown); });
+		m_cv.wait_for(lock, std::chrono::seconds(3), [&] {
+			return (m_queue.size() >= 20 || m_shutdown); });
 
+		// thread woke up! Move everything to from m_queue, give up lock and start writing
+		std::deque<std::string> buffer(std::make_move_iterator(m_queue.begin()), 
+			std::make_move_iterator(m_queue.end()));
+		m_queue.clear();
+		lock.unlock();
+
+		while (buffer.size())
+		{
+			std::cout << buffer.front() << std::endl;
+			m_file << buffer.front() << "\n";
+			buffer.pop_front();
+		}
+		m_file.flush();
+
+
+		// shutdown at the end, so we flush what we had to file before exiting
 		if (m_shutdown)
 		{
 			return;
 		}
-		m_file << m_queue.front() << std::endl;
-		m_queue.pop_front();
 	}
 }
 
@@ -125,11 +139,11 @@ int main()
 	}
 	std::this_thread::sleep_for(std::chrono::seconds(10));
 	// performance:
-	// 1st run		21:34:50.420 - 21:34:48.774 = 1.646
-	// 2nd run		21:35:56.044 - 21:35:54.408 = 1.636
-	// 3rd run		21:36:41.279 - 21:36:39.639 = 1.640
+	// 1st run		00:28:35.568 - 00:28:35.417 = 0.151 s
+	// 2nd run		00:30:18.977 - 00:30:18.825 = 0.152 s
+	// 3rd run		00:31:28.556 - 00:31:28.403 = 0.153 s
 	// 100 threads x 50 logs = 5000 logs
-	// 5000 logs /  1.64 s
-	// 1 log / 0.328 ms (avg)
+	// 5000 logs / 0.152 s
+	// 1 log / 0.030 ms (avg)
 
 }
