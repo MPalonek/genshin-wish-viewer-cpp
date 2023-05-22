@@ -44,6 +44,7 @@ void Logger::addLog(std::string callerName, std::string msg, logLevel level)
 		std::string log = serializeTimePoint(m_clock.now()) + " [" + logLevelStr[level] + "] " + callerName + ": " + msg;
 		m_queue.emplace_back(std::move(log));
 		std::cout << m_queue.back() << std::endl;
+		// Could unlock before notifing
 		m_cv.notify_one();
 	}
 }
@@ -101,7 +102,7 @@ void Logger::writerLoop()
 
 void helperfunc(std::string str)
 {
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 50; i++)
 	{
 		Logger::getInstance().addLog(str, "Some random string__" + std::to_string(i));
 	}
@@ -117,18 +118,18 @@ int main()
 
 	std::this_thread::sleep_for(std::chrono::seconds(4));
 
-	for (int i = 0; i < 50; i++)
+	for (int i = 0; i < 100; i++)
 	{
 		std::string str = "thread_" + std::to_string(i);
 		std::thread([str] { helperfunc(str); }).detach();
 	}
 	std::this_thread::sleep_for(std::chrono::seconds(10));
 	// performance:
-	// 1st run		18:34:38.445 - 18:34:38.272 = 173
-	// 2nd run		18:42:36.322 - 18:42:36.150 = 172
-	// 3rd run		18:45:55.266 - 18:45:55.093 = 173
-	// 50 threads x 10 logs = 500 logs
-	// 500 logs / 173 ms
-	// 1 log / 0.346 ms (avg)
+	// 1st run		21:34:50.420 - 21:34:48.774 = 1.646
+	// 2nd run		21:35:56.044 - 21:35:54.408 = 1.636
+	// 3rd run		21:36:41.279 - 21:36:39.639 = 1.640
+	// 100 threads x 50 logs = 5000 logs
+	// 5000 logs /  1.64 s
+	// 1 log / 0.328 ms (avg)
 
 }
