@@ -47,7 +47,7 @@ public:
 		"WARNING",
 		"ERROR"
 	};
-	
+
 	// disable copy and move
 	Logger(const Logger&) = delete;
 	void operator=(const Logger&) = delete;
@@ -74,10 +74,12 @@ private:
 	std::deque<std::string> m_queue;
 	std::mutex m_queueMutex;
 
-	std::thread m_writerThread;	// thread
+	const int m_flushPeriodInSec = 2;
+	const int m_flushQItemCount = 100;
+
+	std::thread m_writerThread;
 	std::condition_variable m_cv;
 	bool m_shutdown = false;
-	// flush_period
 
 };
 
