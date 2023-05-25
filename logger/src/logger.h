@@ -56,7 +56,8 @@ public:
 
 	// actual functions
 	static Logger& getInstance(logLevel level = INFO, std::filesystem::path path = "log.txt");
-	void addLog(std::string callerName, std::string msg, logLevel level = INFO);
+	void addLog(std::string callerName, std::string_view msg, logLevel level = INFO);
+	void addLog(std::string callerName, std::stringstream& msg, logLevel level = INFO);
 
 private:
 	Logger(logLevel l, std::filesystem::path p);
@@ -64,6 +65,7 @@ private:
 
 	std::string serializeTimePoint(const std::chrono::system_clock::time_point& time);
 	std::string serializeTimePoint(const std::chrono::system_clock::time_point& time, std::string_view format);
+	std::tm localtime_safe(std::time_t& timer);
 	void writerLoop();
 
 	std::chrono::system_clock m_clock;

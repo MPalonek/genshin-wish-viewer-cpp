@@ -1,4 +1,5 @@
 #include "importer.h"
+#include "logger/src/logger.h"
 #include <iostream>
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -9,6 +10,7 @@
 // https://docs.opencv.org/4.x/dd/d6e/tutorial_windows_visual_studio_opencv.html
 // https://tpgit.github.io/Leptonica
 
+// this function is for finding out the best otsu values
 void saveOtsuBinarizedImg(std::string imgPath, int matrixSize)
 {
     // Load image
@@ -18,7 +20,9 @@ void saveOtsuBinarizedImg(std::string imgPath, int matrixSize)
     int width = pixGetWidth(image);
     int height = pixGetHeight(image);
     int depth = pixGetDepth(image);
-    std::cout << "image Width: " << width << ", Height: " << height << ", Depth: " << depth << std::endl;
+    std::stringstream log;
+    log << "image Width: " << width << ", Height: " << height << ", Depth: " << depth;
+    Logger::getInstance().addLog("importer", log);
 
     // Convert input image to grayscale
     Pix* gray = pixConvertRGBToGrayFast(image);
@@ -171,7 +175,7 @@ int main()
     pixDestroy(&image);
     */
     
-    saveOtsuBinarizedImg("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_6.JPG", 40);
+    saveOtsuBinarizedImg("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_6.JPG", 32);
 	return 0;
 
 }

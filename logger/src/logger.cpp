@@ -1,12 +1,11 @@
 #include "logger.h"
-#include <iomanip>
 
 // Logger constructor
 // m_level and m_filepath are const, so once constructed they can't be changed
 Logger::Logger(logLevel l, std::filesystem::path p) : m_level(l), m_filepath(p)
 {
 	std::stringstream ss;
-	ss << "Logger initialization...\n\tLevel: " << logLevelStr[m_level] << "\n\tDate: " << 
+	ss << std::string(80, '*') << "\nLogger initialization...\n\tLevel: " << logLevelStr[m_level] << "\n\tDate: " <<
 		serializeTimePoint(m_clock.now(), "%Y-%m-%d %H:%M:%S (%Z)") << "\n\tLogPath: " << std::filesystem::absolute(m_filepath);
 	m_queue.emplace_back(std::move(ss.str()));
 	m_file.open(m_filepath, std::ios::app); // std::ios::app for append mode
@@ -38,7 +37,7 @@ Logger& Logger::getInstance(logLevel level, std::filesystem::path path)
 // Function is thread safe.
 // Example usecase:		addLog("main", "debug message", Logger::DEBUG);
 // Example output:		18:33:54.208 [DEBUG] main: debug message
-void Logger::addLog(std::string callerName, std::string msg, logLevel level)
+void Logger::addLog(std::string callerName, std::string_view msg, logLevel level)
 {
 	if (m_level <= level)
 	{
@@ -46,11 +45,17 @@ void Logger::addLog(std::string callerName, std::string msg, logLevel level)
 		std::unique_lock lock(m_queueMutex);
 		m_cv.wait(lock, [&] { return m_queue.size() < m_flushQItemCount; });
 
-		std::string log = serializeTimePoint(m_clock.now()) + " [" + logLevelStr[level] + "] " + callerName + ": " + msg;
+		std::string log = serializeTimePoint(m_clock.now()) + " [" + logLevelStr[level] + "] " + callerName + ": " + std::string(msg);
 		m_queue.emplace_back(std::move(log));
 		// Could unlock before notifing
 		m_cv.notify_one();
 	}
+}
+
+// addLog overload for stringstream
+void Logger::addLog(std::string callerName, std::stringstream& msg, logLevel level)
+{
+	addLog(callerName, msg.str(), level);
 }
 
 // Turns std::chrono::system_clock::time_point into specially formatted string.
@@ -61,7 +66,7 @@ std::string Logger::serializeTimePoint(const std::chrono::system_clock::time_poi
 {
 	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(time.time_since_epoch()) % 1000;
 	std::time_t tt = std::chrono::system_clock::to_time_t(time);
-	std::tm tm = *std::localtime(&tt); // Locale time-zone
+	std::tm tm = localtime_safe(tt); // Locale time-zone
 
 	std::stringstream sstream;
 	sstream  << std::put_time(&tm, "%H:%M:%S");
@@ -78,11 +83,28 @@ std::string Logger::serializeTimePoint(const std::chrono::system_clock::time_poi
 {
 	std::time_t tt = std::chrono::system_clock::to_time_t(time);
 	//std::tm tm = *std::gmtime(&tt); // GMT (UTC)
-	std::tm tm = *std::localtime(&tt); // Locale time-zone
+	std::tm tm = localtime_safe(tt); // Locale time-zone
 
 	std::stringstream sstream;
 	sstream  << std::put_time(&tm, format.data());
 	return sstream.str();
+}
+
+// std::localtime is not thread-safe because it uses a static buffer (shared between threads)
+// Both POSIX and Windows have safe alternatives used in this function
+std::tm Logger::localtime_safe(std::time_t& timer)
+{
+	std::tm tm {};
+#if defined(__unix__)
+	localtime_r(&timer, &tm);
+#elif defined(_MSC_VER)
+	localtime_s(&tm, &timer);
+#else
+	static std::mutex mtx;
+	std::lock_guard<std::mutex> lock(mtx);
+	bt = *std::localtime(&timer);
+#endif
+	return tm;
 }
 
 // Loop for thread, that will take strings from m_queue and write them to console and file
@@ -120,6 +142,7 @@ void Logger::writerLoop()
 	}
 }
 
+/*
 void helperfunc(std::string str)
 {
 	for (int i = 0; i < 50; i++)
@@ -149,7 +172,7 @@ void printStatfunc(std::vector<std::pair<int, std::chrono::system_clock::time_po
 	for (const auto& pair : ar) {
 		sum += pair.first;
 	}
-	int mean = sum / ar.size();
+	int mean = static_cast<int>(sum / ar.size());
 
 	// Printing table
 	//int maxNumWidth = std::to_string(ar.size()).length();
@@ -178,6 +201,7 @@ void printStatfunc(std::vector<std::pair<int, std::chrono::system_clock::time_po
 	std::cout << std::string(headerRow.length(), '*') << std::endl;
 }
 
+
 int main()
 {
 	std::cout << "test\n";
@@ -203,3 +227,4 @@ int main()
 	// 1 log / 0.314 ms (avg)
 
 }
+*/
