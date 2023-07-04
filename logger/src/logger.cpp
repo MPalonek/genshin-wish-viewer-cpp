@@ -27,6 +27,7 @@ Logger::~Logger()
 
 // Get Logger instance (Singleton)
 // level and path are set on first init for a lifetime!
+// Example usecase:		Logger::getInstance(Logger::logLevel::DEBUG);
 Logger& Logger::getInstance(logLevel level, std::filesystem::path path)
 {
 	static Logger instance(level, path);

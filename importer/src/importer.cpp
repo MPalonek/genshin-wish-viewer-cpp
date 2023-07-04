@@ -70,6 +70,162 @@ void saveOtsuBinarizedImg(std::string imgPath, int matrixSize)
     pixDestroy(&ppixd3);
 }
 
+void edgeDetection(std::string_view imgPath)
+{
+    // Load image
+    std::unique_ptr<Pix*> image = std::make_unique<Pix*>(pixRead(imgPath.data()));
+    //Pix* image = pixRead(imgPath.data());
+    pixWrite("sobelEdge_0.jpg", *image, IFF_PNG);
+
+    Pix* gray = pixConvertRGBToGrayFast(*image);
+    pixWrite("sobelEdge_1.jpg", gray, IFF_PNG);
+
+    // Pixa to concatate all pix's
+    Pixa* pixa = pixaCreate(24);
+    Pixa* pixa_b = pixaCreate(12);
+
+    int mult[3] = {3,5,9};
+
+    for (int i = 0; i < 3; i++)
+    {
+        int sx = mult[i];
+        Pix* proc = pixDilateGray(gray, sx, sx);
+        int width = pixGetWidth(proc);
+        int height = pixGetHeight(proc);
+        Pix* ppixth = pixCreate(width, height, 8);
+        Pix* binarized = pixCreate(width, height, 8);
+        pixOtsuAdaptiveThreshold(proc, 32, 32, 1, 1, 0.1, &ppixth, &binarized);
+
+        Boxa* boxes = pixConnCompBB(binarized, 8);
+
+        Pix* resultImage = pixCopy(nullptr, proc);
+        for (l_int32 i = 0; i < boxaGetCount(boxes); ++i) {
+            Box* box = boxaGetBox(boxes, i, L_CLONE);
+            pixRenderBoxArb(resultImage, box, 1, 255,0,0);  // Draw the box borders on the result image
+            boxDestroy(&box);
+        }
+        
+        // Add pix to pixa
+        pixaAddPix(pixa, proc, L_INSERT);
+        pixaAddPix(pixa, binarized, L_INSERT);
+        pixaAddPix(pixa, resultImage, L_INSERT);
+    }
+    for (int i = 0; i < 3; i++)
+    {
+        int sx = mult[i];
+        Pix* proc = pixErodeGray(gray, sx, sx);
+        int width = pixGetWidth(proc);
+        int height = pixGetHeight(proc);
+        Pix* ppixth = pixCreate(width, height, 8);
+        Pix* binarized = pixCreate(width, height, 8);
+        pixOtsuAdaptiveThreshold(proc, 32, 32, 1, 1, 0.1, &ppixth, &binarized);
+
+        Boxa* boxes = pixConnCompBB(binarized, 8);
+
+        Pix* resultImage = pixCopy(nullptr, proc);
+        for (l_int32 i = 0; i < boxaGetCount(boxes); ++i) {
+            Box* box = boxaGetBox(boxes, i, L_CLONE);
+            pixRenderBoxArb(resultImage, box, 1, 255, 0, 0);  // Draw the box borders on the result image
+            boxDestroy(&box);
+        }
+
+        // Add pix to pixa
+        pixaAddPix(pixa, proc, L_INSERT);
+        pixaAddPix(pixa, binarized, L_INSERT);
+        pixaAddPix(pixa, resultImage, L_INSERT);
+    }
+
+
+    for (int i = 0; i < 3; i++)
+    {
+        int sx = mult[i];
+        Pix* proc = pixCloseGray(gray, sx, sx);
+        int width = pixGetWidth(proc);
+        int height = pixGetHeight(proc);
+        Pix* ppixth = pixCreate(width, height, 8);
+        Pix* binarized = pixCreate(width, height, 8);
+        pixOtsuAdaptiveThreshold(proc, 32, 32, 1, 1, 0.1, &ppixth, &binarized);
+
+        Boxa* boxes = pixConnCompBB(binarized, 8);
+
+        Pix* resultImage = pixCopy(nullptr, proc);
+        for (l_int32 i = 0; i < boxaGetCount(boxes); ++i) {
+            Box* box = boxaGetBox(boxes, i, L_CLONE);
+            pixRenderBoxArb(resultImage, box, 1, 255, 0, 0);  // Draw the box borders on the result image
+            boxDestroy(&box);
+        }
+
+        // Add pix to pixa
+        pixaAddPix(pixa_b, proc, L_INSERT);
+        pixaAddPix(pixa_b, binarized, L_INSERT);
+        pixaAddPix(pixa_b, resultImage, L_INSERT);
+    }
+    for (int i = 0; i < 3; i++)
+    {
+        int sx = mult[i];
+        Pix* proc = pixOpenGray(gray, sx, sx);
+        int width = pixGetWidth(proc);
+        int height = pixGetHeight(proc);
+        Pix* ppixth = pixCreate(width, height, 8);
+        Pix* binarized = pixCreate(width, height, 8);
+        pixOtsuAdaptiveThreshold(proc, 32, 32, 1, 1, 0.1, &ppixth, &binarized);
+
+        Boxa* boxes = pixConnCompBB(binarized, 8);
+
+        Pix* resultImage = pixCopy(nullptr, proc);
+        for (l_int32 i = 0; i < boxaGetCount(boxes); ++i) {
+            Box* box = boxaGetBox(boxes, i, L_CLONE);
+            pixRenderBoxArb(resultImage, box, 1, 255, 0, 0);  // Draw the box borders on the result image
+            boxDestroy(&box);
+        }
+
+        // Add pix to pixa
+        pixaAddPix(pixa_b, proc, L_INSERT);
+        pixaAddPix(pixa_b, binarized, L_INSERT);
+        pixaAddPix(pixa_b, resultImage, L_INSERT);
+    }
+
+    Pix* edges1 = pixSobelEdgeFilter(gray, L_HORIZONTAL_EDGES);
+    pixWrite("sobelEdge_2_S_H.jpg", edges1, IFF_PNG);
+
+    Pix* edges2 = pixSobelEdgeFilter(gray, L_VERTICAL_EDGES);
+    pixWrite("sobelEdge_3_S_V.jpg", edges2, IFF_PNG);
+
+    Pix* edges3 = pixSobelEdgeFilter(gray, L_ALL_EDGES);
+    pixWrite("sobelEdge_4_S_A.jpg", edges3, IFF_PNG);
+
+    Pix* edges4 = pixTwoSidedEdgeFilter(gray, L_HORIZONTAL_EDGES);
+    pixWrite("sobelEdge_5_TSE_H.jpg", edges4, IFF_PNG);
+
+    Pix* edges5 = pixTwoSidedEdgeFilter(gray, L_VERTICAL_EDGES);
+    pixWrite("sobelEdge_5_TSE_V.jpg", edges5, IFF_PNG);
+
+    // Threshold the edge image
+    Pix* thresholded = pixThresholdToBinary(edges3, 1);
+    pixWrite("thresholded1.jpg", thresholded, IFF_PNG);
+
+    Pix* thresholded1 = pixThresholdToBinary(edges3, 10);
+    pixWrite("thresholded10.jpg", thresholded1, IFF_PNG);
+
+    Pix* thresholded2 = pixThresholdToBinary(edges3, 20);
+    pixWrite("thresholded20.jpg", thresholded2, IFF_PNG);
+
+    Pix* thresholded3 = pixThresholdToBinary(edges3, 30);
+    pixWrite("thresholded30.jpg", thresholded3, IFF_PNG);
+
+    // Apply morphological operations to enhance horizontal lines
+    Pix* processed = pixMorphSequence(thresholded2, "e3.3 + c3.3", 0);
+    pixWrite("processed.jpg", processed, IFF_PNG);
+
+    std::string filename = "dilate_erode";
+    Pix* tiledPix = pixaDisplayTiledInColumns(pixa, 3, 1, 10, 1);
+    pixWrite((filename + std::string(".jpg")).c_str(), tiledPix, IFF_PNG);
+    std::string filename_b = "open_close";
+    Pix* tiledPix_b = pixaDisplayTiledInColumns(pixa_b, 3, 1, 10, 1);
+    pixWrite((filename_b + std::string(".jpg")).c_str(), tiledPix_b, IFF_PNG);
+
+}
+
 int main()
 {
     /*
@@ -176,6 +332,9 @@ int main()
     */
     
     saveOtsuBinarizedImg("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_6.JPG", 32);
+    edgeDetection("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_6.JPG");
+
+
 	return 0;
 
 }
