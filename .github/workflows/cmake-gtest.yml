@@ -22,10 +22,6 @@ jobs:
         sudo apt install -y libtesseract-dev
         sudo rm -rf /etc/apt/trusted.gpg.d/alex-p-ubuntu-tesseract-ocr5.gpg*
         sudo rm -rf /etc/apt/sources.list.d/alex-p-ubuntu-tesseract-ocr5-jammy.list
-    
-    - name: Check Tesseract
-      run: |
-        tesseract --version
 
     - name: Configure CMake
       run: |
