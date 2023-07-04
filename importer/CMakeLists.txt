@@ -34,10 +34,6 @@ else() # WINDOWS
   find_package( Tesseract CONFIG REQUIRED )
 endif()
 
-set( OpenCV_STATIC ON )
-find_package( OpenCV CONFIG REQUIRED )
-find_package( Tesseract CONFIG REQUIRED )
-
 #add_library(importer ${IMPORTER_HEADER} ${IMPORTER_SOURCE})
 add_executable(importer ${IMPORTER_HEADER} ${IMPORTER_SOURCE})
 
