@@ -12,6 +12,28 @@ set( IMPORTER_SOURCE
 	src/importer.cpp
 )
 
+if (UNIX)
+  set( OpenCV_STATIC ON )
+  find_package( OpenCV CONFIG REQUIRED )
+  find_library( Tesseract_LIBRARY NAMES tesseract )
+  find_path( Tesseract_INCLUDE_DIR NAMES tesseract/baseapi.h )
+  
+  if (Tesseract_LIBRARY AND Tesseract_INCLUDE_DIR)
+    set(Tesseract_FOUND TRUE)
+  endif()
+  if (Tesseract_FOUND)
+    message(STATUS "Found Tesseract library: ${Tesseract_LIBRARY}")
+    message(STATUS "Found Tesseract include directory: ${Tesseract_INCLUDE_DIR}")
+  else()
+    message(FATAL_ERROR "Tesseract library not found")
+  endif()
+    
+else() # WINDOWS
+  set( OpenCV_STATIC ON )
+  find_package( OpenCV CONFIG REQUIRED )
+  find_package( Tesseract CONFIG REQUIRED )
+endif()
+
 set( OpenCV_STATIC ON )
 find_package( OpenCV CONFIG REQUIRED )
 find_package( Tesseract CONFIG REQUIRED )
@@ -35,4 +57,8 @@ link_directories( ${OpenCV_LIB_DIR} )
 #	add_subdirectory (importerTest)
 #endif()
 
-target_link_libraries( importer ${OpenCV_LIBS} Tesseract::libtesseract logger )
+if (UNIX)
+  target_link_libraries( importer ${OpenCV_LIBS} ${Tesseract_LIBRARY} lept logger )
+else() # WINDOWS
+  target_link_libraries( importer ${OpenCV_LIBS} Tesseract::libtesseract logger )
+endif()
