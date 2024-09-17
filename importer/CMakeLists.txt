@@ -5,11 +5,13 @@ cmake_minimum_required (VERSION 3.15)
 project ("importer")
 
 set( IMPORTER_HEADER
-	src/importer.h
+    src/importer.h
+    src/importerItem.h
 )
 
 set( IMPORTER_SOURCE
-	src/importer.cpp
+    src/importer.cpp
+    src/importerItem.cpp
 )
 
 if (UNIX)

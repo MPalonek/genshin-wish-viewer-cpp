@@ -6,6 +6,8 @@
 #include <opencv2/highgui.hpp>
 #include <tesseract/baseapi.h>
 #include <leptonica/allheaders.h>
+#include <filesystem>
+
 
 // https://docs.opencv.org/4.x/dd/d6e/tutorial_windows_visual_studio_opencv.html
 // https://tpgit.github.io/Leptonica
@@ -26,6 +28,10 @@ void saveOtsuBinarizedImg(std::string imgPath, int matrixSize)
 
     // Convert input image to grayscale
     Pix* gray = pixConvertRGBToGrayFast(image);
+    
+    // Displaying image in irfanView
+    setLeptDebugOK(1);
+    pixDisplay(gray, 0, 0);
 
     // Create bunch of Pixs for binarization
     Pix* ppixth = pixCreate(width, height, 8);
@@ -55,7 +61,7 @@ void saveOtsuBinarizedImg(std::string imgPath, int matrixSize)
     }
 
     std::stringstream ss;
-    ss << "fixme" << "_Otsu-" << sx << "-" << sy;
+    ss << "__output/fixme" << "_Otsu-" << sx << "-" << sy;
     std::string filename = ss.str();
 
     Pix* tiledPix = pixaDisplayTiledInColumns(pixa, 3, 1, 10, 1);
@@ -70,15 +76,175 @@ void saveOtsuBinarizedImg(std::string imgPath, int matrixSize)
     pixDestroy(&ppixd3);
 }
 
+void attempt(std::string imgPath)
+{
+    setLeptDebugOK(1);
+
+    // Load image
+    Pix* image = pixRead(imgPath.c_str());
+
+    // Convert input image to grayscale
+    Pix* gray = pixConvertRGBToGrayFast(image);
+
+    // Create bunch of Pixs for binarization
+    Pix* ppixth = NULL;
+    Pix* ppixd = NULL;
+
+    int sx = 32;
+    int sy = sx;
+
+    // Otsu
+    pixOtsuAdaptiveThreshold(gray, sx, sy, 2, 2, 0.2f, NULL, &ppixd);
+    pixDisplay(ppixd, 0, 0);
+    
+    // Create a 3x3 structuring element for erosion
+    
+
+    // erode - to get rid of small artifacts
+    SEL* sele = selCreateBrick(3, 3, 1, 1, SEL_HIT);
+    Pix* erode = pixErode(NULL, ppixd, sele);
+    pixDisplay(erode, 0, 0);
+
+    // dilate - to make big what was left after erosion (preferably blobs were text is)
+    SEL* seld = selCreateBrick(32, 32, 15, 15, SEL_HIT);
+    Pix* dilate = pixDilate(NULL, erode, seld);
+    pixDisplay(dilate, 0, 0);
+
+    // split image into rows (6 rows max?)
+
+}
+
+void attempt2(std::string imgPath)
+{
+    setLeptDebugOK(1);
+    tesseract::TessBaseAPI* api = new tesseract::TessBaseAPI();
+    // Initialize tesseract-ocr with English, without specifying tessdata path
+    if (api->Init(NULL, "eng")) {
+        fprintf(stderr, "Could not initialize tesseract.\n");
+        exit(1);
+    }
+    char* outText;
+
+    // Load image
+    Pix* image = pixRead(imgPath.c_str());
+
+    // Convert input image to grayscale
+    Pix* gray = pixConvertRGBToGrayFast(image);
+    //pixDisplay(gray, 0, 0);
+
+
+    // Get image dimensions
+    l_int32 width, height;
+    pixGetDimensions(gray, &width, &height, NULL);
+
+    std::vector<std::vector<int>> grayArr{};
+    // Print the matrix of pixel values
+    for (l_int32 y = 0; y < height; ++y) {
+        std::vector<int> temp{};
+        temp.reserve(width);
+        for (l_int32 x = 0; x < width; ++x) {
+            l_uint32 pixelValue{};
+            pixGetPixel(gray, x, y, &pixelValue);
+            temp.push_back(pixelValue);
+        }
+        grayArr.push_back(temp);
+    }
+
+
+
+    // otsu
+    Pix* ppixth = NULL;
+    Pix* pixBinary = NULL;
+
+    int sx = 2048;
+    int sy = sx;
+
+    int smoothx = 2;
+    int smoothy = smoothx;
+
+    pixOtsuAdaptiveThreshold(gray, sx, sy, smoothx, smoothy, 0.2f, NULL, &pixBinary);
+    pixDisplay(pixBinary, 0, 0);
+
+    // erode - to get rid of small artifacts
+    SEL* sele = selCreateBrick(3, 3, 1, 1, SEL_HIT);
+    Pix* erode = pixErode(NULL, pixBinary, sele);
+    pixDisplay(erode, 0, 0);
+
+    // dilate - to make big what was left after erosion (preferably blobs were text is)
+    SEL* seld = selCreateBrick(3, 32, 1, 15, SEL_HIT); // check out this special mask! 
+    Pix* dilate = pixDilate(NULL, erode, seld);
+    pixDisplay(dilate, 0, 0);
+
+    // close - to get even better blobs were text is
+    SEL* selc = selCreateBrick(9, 9, 4, 4, SEL_HIT);
+    Pix* close = pixCreate(width, height, 8);
+    pixClose(close, dilate, selc);
+    pixDisplay(close, 0, 0);
+
+    // box each blob
+    Boxa* boxes = pixConnCompBB(close, 8); // 8-connected components
+    Pix* resultImage = pixConvert1To32(NULL, pixBinary, 0xFFFFFFFF, 0);  // White background for binary image
+    for (l_int32 i = 0; i < boxaGetCount(boxes); ++i) {
+        Box* box = boxaGetBox(boxes, i, L_CLONE);
+        int x, y, w, h;
+        // Use Leptonica's boxGetGeometry to get the box coordinates and size
+        boxGetGeometry(box, &x, &y, &w, &h);
+        std::stringstream log;
+        log << "Box " << std::setw(2) << i << " - x: " << std::setw(4) << x << ", y: " << std::setw(3) << y << ", w:" << w << ", h:" << h;
+        
+        // make rectangles bigger
+        int padding = 5; // Adjust this value as needed
+        x -= padding;
+        y -= padding;
+        w += 2 * padding;
+        h += 2 * padding;
+        Box* expandedBox = boxCreate(x, y, w, h);
+
+        // crop/cut image into smaller one
+        PIX* pixCropped = pixClipRectangle(pixBinary, expandedBox, NULL);
+        std::string filename = "blob_" + std::to_string(i + 1) + ".png";
+        pixWrite(filename.c_str(), pixCropped, IFF_PNG);
+
+        //OCR
+        api->SetImage(pixCropped);
+        // Get OCR result
+        outText = api->GetUTF8Text();
+        printf("OCR output:\n%s", outText);
+
+        std::string z = outText;
+        //removeSpecialChars(z);
+        log << "\t" << z;
+        Logger::getInstance().addLog("importer", log);
+
+        pixRenderBoxArb(resultImage, box, 1, 255, 0, 0);  // Draw the box borders on the result image
+        boxDestroy(&box);
+    }
+    pixDisplay(resultImage, 0, 0);
+
+    
+
+
+
+
+
+
+
+
+
+
+    int i = 0;
+
+}
+
 void edgeDetection(std::string_view imgPath)
 {
     // Load image
     std::unique_ptr<Pix*> image = std::make_unique<Pix*>(pixRead(imgPath.data()));
     //Pix* image = pixRead(imgPath.data());
-    pixWrite("sobelEdge_0.jpg", *image, IFF_PNG);
+    pixWrite("__output/sobelEdge_0.jpg", *image, IFF_PNG);
 
     Pix* gray = pixConvertRGBToGrayFast(*image);
-    pixWrite("sobelEdge_1.jpg", gray, IFF_PNG);
+    pixWrite("__output/sobelEdge_1.jpg", gray, IFF_PNG);
 
     // Pixa to concatate all pix's
     Pixa* pixa = pixaCreate(24);
@@ -94,7 +260,7 @@ void edgeDetection(std::string_view imgPath)
         int height = pixGetHeight(proc);
         Pix* ppixth = pixCreate(width, height, 8);
         Pix* binarized = pixCreate(width, height, 8);
-        pixOtsuAdaptiveThreshold(proc, 32, 32, 1, 1, 0.1, &ppixth, &binarized);
+        pixOtsuAdaptiveThreshold(proc, 32, 32, 1, 1, 0.1f, &ppixth, &binarized);
 
         Boxa* boxes = pixConnCompBB(binarized, 8);
 
@@ -118,7 +284,7 @@ void edgeDetection(std::string_view imgPath)
         int height = pixGetHeight(proc);
         Pix* ppixth = pixCreate(width, height, 8);
         Pix* binarized = pixCreate(width, height, 8);
-        pixOtsuAdaptiveThreshold(proc, 32, 32, 1, 1, 0.1, &ppixth, &binarized);
+        pixOtsuAdaptiveThreshold(proc, 32, 32, 1, 1, 0.1f, &ppixth, &binarized);
 
         Boxa* boxes = pixConnCompBB(binarized, 8);
 
@@ -144,7 +310,7 @@ void edgeDetection(std::string_view imgPath)
         int height = pixGetHeight(proc);
         Pix* ppixth = pixCreate(width, height, 8);
         Pix* binarized = pixCreate(width, height, 8);
-        pixOtsuAdaptiveThreshold(proc, 32, 32, 1, 1, 0.1, &ppixth, &binarized);
+        pixOtsuAdaptiveThreshold(proc, 32, 32, 1, 1, 0.1f, &ppixth, &binarized);
 
         Boxa* boxes = pixConnCompBB(binarized, 8);
 
@@ -168,7 +334,7 @@ void edgeDetection(std::string_view imgPath)
         int height = pixGetHeight(proc);
         Pix* ppixth = pixCreate(width, height, 8);
         Pix* binarized = pixCreate(width, height, 8);
-        pixOtsuAdaptiveThreshold(proc, 32, 32, 1, 1, 0.1, &ppixth, &binarized);
+        pixOtsuAdaptiveThreshold(proc, 32, 32, 1, 1, 0.1f, &ppixth, &binarized);
 
         Boxa* boxes = pixConnCompBB(binarized, 8);
 
@@ -186,41 +352,41 @@ void edgeDetection(std::string_view imgPath)
     }
 
     Pix* edges1 = pixSobelEdgeFilter(gray, L_HORIZONTAL_EDGES);
-    pixWrite("sobelEdge_2_S_H.jpg", edges1, IFF_PNG);
+    pixWrite("__output/sobelEdge_2_S_H.jpg", edges1, IFF_PNG);
 
     Pix* edges2 = pixSobelEdgeFilter(gray, L_VERTICAL_EDGES);
-    pixWrite("sobelEdge_3_S_V.jpg", edges2, IFF_PNG);
+    pixWrite("__output/sobelEdge_3_S_V.jpg", edges2, IFF_PNG);
 
     Pix* edges3 = pixSobelEdgeFilter(gray, L_ALL_EDGES);
-    pixWrite("sobelEdge_4_S_A.jpg", edges3, IFF_PNG);
+    pixWrite("__output/sobelEdge_4_S_A.jpg", edges3, IFF_PNG);
 
     Pix* edges4 = pixTwoSidedEdgeFilter(gray, L_HORIZONTAL_EDGES);
-    pixWrite("sobelEdge_5_TSE_H.jpg", edges4, IFF_PNG);
+    pixWrite("__output/sobelEdge_5_TSE_H.jpg", edges4, IFF_PNG);
 
     Pix* edges5 = pixTwoSidedEdgeFilter(gray, L_VERTICAL_EDGES);
-    pixWrite("sobelEdge_5_TSE_V.jpg", edges5, IFF_PNG);
+    pixWrite("__output/sobelEdge_5_TSE_V.jpg", edges5, IFF_PNG);
 
     // Threshold the edge image
     Pix* thresholded = pixThresholdToBinary(edges3, 1);
-    pixWrite("thresholded1.jpg", thresholded, IFF_PNG);
+    pixWrite("__output/thresholded1.jpg", thresholded, IFF_PNG);
 
     Pix* thresholded1 = pixThresholdToBinary(edges3, 10);
-    pixWrite("thresholded10.jpg", thresholded1, IFF_PNG);
+    pixWrite("__output/thresholded10.jpg", thresholded1, IFF_PNG);
 
     Pix* thresholded2 = pixThresholdToBinary(edges3, 20);
-    pixWrite("thresholded20.jpg", thresholded2, IFF_PNG);
+    pixWrite("__output/thresholded20.jpg", thresholded2, IFF_PNG);
 
     Pix* thresholded3 = pixThresholdToBinary(edges3, 30);
-    pixWrite("thresholded30.jpg", thresholded3, IFF_PNG);
+    pixWrite("__output/thresholded30.jpg", thresholded3, IFF_PNG);
 
     // Apply morphological operations to enhance horizontal lines
     Pix* processed = pixMorphSequence(thresholded2, "e3.3 + c3.3", 0);
-    pixWrite("processed.jpg", processed, IFF_PNG);
+    pixWrite("__output/processed.jpg", processed, IFF_PNG);
 
-    std::string filename = "dilate_erode";
+    std::string filename = "__output/dilate_erode";
     Pix* tiledPix = pixaDisplayTiledInColumns(pixa, 3, 1, 10, 1);
     pixWrite((filename + std::string(".jpg")).c_str(), tiledPix, IFF_PNG);
-    std::string filename_b = "open_close";
+    std::string filename_b = "__output/open_close";
     Pix* tiledPix_b = pixaDisplayTiledInColumns(pixa_b, 3, 1, 10, 1);
     pixWrite((filename_b + std::string(".jpg")).c_str(), tiledPix_b, IFF_PNG);
 
@@ -331,10 +497,196 @@ int main()
     pixDestroy(&image);
     */
     
-    saveOtsuBinarizedImg("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_6.JPG", 32);
-    edgeDetection("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_6.JPG");
+    //std::filesystem::create_directory("__output");
+    //attempt2("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_6.JPG");
+    //saveOtsuBinarizedImg("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_6.JPG", 20);
+    //edgeDetection("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_6.JPG");
+
+    Importer i;
 
 
 	return 0;
 
+}
+
+
+void convertImageToText(std::string imgPath)
+{
+
+    // tesseract must be initilized
+    // load image
+    // otsu threshold
+    // morphological shit (erode, dilate, close)
+    // box blobs (return coordinates)
+    // snip img
+    // do ocr on snips
+
+
+
+
+
+
+}
+
+Importer::Importer()
+{
+    InitilizeTesseract();
+
+
+    Logger::getInstance(Logger::DEBUG);
+    auto a = ExtractWishesFromImage("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_5.JPG");
+    for (auto& wish : a) {
+        log(std::format("Wish - itemType: {}, itemName: {}, date: {}, rarity: {}", wish.itemType, wish.itemName, wish.date, wish.itemRarity));
+    }
+    a = ExtractWishesFromImage("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_6.JPG");
+    for (auto& wish : a) {
+        log(std::format("Wish - itemType: {}, itemName: {}, date: {}, rarity: {}", wish.itemType, wish.itemName, wish.date, wish.itemRarity));
+    }
+}
+
+Importer::~Importer()
+{
+    CleanupTesseract();
+}
+
+void Importer::InitilizeTesseract()
+{
+    std::lock_guard<std::mutex> lock(m_tesseractApiMutex);
+    m_tesseractApi = new tesseract::TessBaseAPI();
+    // Initialize tesseract-ocr with English, without specifying tessdata path
+    if (m_tesseractApi->Init(NULL, "eng")) {
+        fprintf(stderr, "Could not initialize tesseract.\n");
+        exit(1);
+    }
+}
+
+void Importer::CleanupTesseract()
+{
+    std::lock_guard<std::mutex> lock(m_tesseractApiMutex);
+    m_tesseractApi->End();
+    delete m_tesseractApi;
+}
+
+std::string Importer::ExtractTextFromPix(Pix* image)
+{
+    std::lock_guard<std::mutex> lock(m_tesseractApiMutex);
+    // OCR
+    m_tesseractApi->SetImage(image);
+    m_tesseractOutputText = m_tesseractApi->GetUTF8Text();
+
+    // Save to std::string and remove special characters
+    std::string output(m_tesseractOutputText ? m_tesseractOutputText : "");
+    StripString(output);
+    log(std::format("Extracted text: {}", output), Logger::DEBUG);
+
+    if (m_tesseractOutputText) {
+        delete[] m_tesseractOutputText;
+    }
+
+    return output;
+}
+
+unsigned int Importer::ExtractRarityFromText(std::string& itemName)
+{
+    if (itemName.find("4-Star") != std::string::npos) {
+        return 4u;
+    }
+    else if (itemName.find("5-Star") != std::string::npos) {
+        return 5u;
+    }
+    else {
+        return 3u;
+    }
+}
+
+std::vector<wishEntry> Importer::ExtractWishFromPixPos(const PixPos& pp)
+{
+    return std::vector<wishEntry>();
+}
+
+std::vector<wishEntry> Importer::ExtractWishesFromImage(const std::string& imgPath)
+{
+    ImporterItem item(imgPath);
+    auto& vec = item.GetTextSnippets();
+
+    // format vec into packets of 3 items
+    auto pixposVec = combinePixPos(vec);
+
+    std::vector<wishEntry> wishVec;
+
+    // ocr into single wish
+    for (auto& pixposPacket : pixposVec) {
+        std::string itemType = ExtractTextFromPix(pixposPacket[0].pix);
+        std::string itemName = ExtractTextFromPix(pixposPacket[1].pix);
+        std::string date = ExtractTextFromPix(pixposPacket[2].pix);
+        wishEntry wish{ itemType, itemName, date, ExtractRarityFromText(itemName) };
+        wishVec.emplace_back(wish);
+    }
+
+    // remove header, if there is one (copy first element, lowercase it, check)
+    std::string first = wishVec[0].itemType;
+    std::transform(first.begin(), first.end(), first.begin(),
+        [](unsigned char c) { return std::tolower(c); });
+    if (first == "item type") {
+        wishVec.erase(wishVec.begin());
+    }
+
+    return wishVec;
+}
+
+std::vector<std::vector<PixPos>> Importer::combinePixPos(std::vector<PixPos>& ppVec)
+{
+    std::vector<std::vector<PixPos>> retVec;
+    if (ppVec.size() % 4 == 0) {
+        // new-style wish
+        for (int i = 0; i < ppVec.size(); i += 4) {
+            std::vector<PixPos> temp{ ppVec[i], ppVec[i + 1], ppVec[i + 3] };
+            retVec.emplace_back(temp);
+        }
+    }
+    else if (ppVec.size() % 3 == 0) {
+        // old-style wish
+    }
+    else {
+        // something went wrong
+    }
+
+
+    return retVec;
+}
+
+void Importer::StripString(std::string& str)
+{
+    // This function is to remove special characters that tesseract found (like newline, tab)
+    std::string result{};
+    result.reserve(str.size()); // Reserve enough space to avoid multiple reallocations
+
+    for (size_t i = 0; i < str.size(); ++i) {
+        if (str[i] == '\n') {
+            if (i > 0 && str[i - 1] == '-') {
+                // Skip the newline
+                continue;
+            }
+            else {
+                // Replace newline with space
+                result += ' ';
+            }
+        }
+        else if (str[i] == '\t' || str[i] == '\r') {
+            // Skip tabs and carriage returns
+            continue;
+        }
+        else {
+            // Copy other characters
+            result += str[i];
+        }
+    }
+
+    // Trim trailing space if exists
+    if (!result.empty() && result.back() == ' ') {
+        result.pop_back();
+    }
+
+    // Replace the original string with the result
+    str = std::move(result);
 }

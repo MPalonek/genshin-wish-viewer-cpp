@@ -50,9 +50,9 @@ public:
 
 	// disable copy and move
 	Logger(const Logger&) = delete;
-	void operator=(const Logger&) = delete;
+	Logger& operator=(const Logger&) = delete;
 	Logger(Logger&&) = delete;
-	void operator=(Logger&&) = delete;
+	Logger& operator=(Logger&&) = delete;
 
 	// actual functions
 	static Logger& getInstance(logLevel level = INFO, std::filesystem::path path = "log.txt");

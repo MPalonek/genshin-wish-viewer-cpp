@@ -2,6 +2,7 @@
 
 // Logger constructor
 // m_level and m_filepath are const, so once constructed they can't be changed
+// m_level controls what logs will be saved (if you choose INFO, no DEBUG log will be saved)
 Logger::Logger(logLevel l, std::filesystem::path p) : m_level(l), m_filepath(p)
 {
 	std::stringstream ss;
