@@ -1,9 +1,9 @@
 #include "importer.h"
 #include "logger/src/logger.h"
 #include <iostream>
-#include <opencv2/core.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/highgui.hpp>
+//#include <opencv2/core.hpp>
+//#include <opencv2/imgcodecs.hpp>
+//#include <opencv2/highgui.hpp>
 #include <tesseract/baseapi.h>
 #include <leptonica/allheaders.h>
 #include <filesystem>
@@ -392,122 +392,122 @@ void edgeDetection(std::string_view imgPath)
 
 }
 
-int main()
-{
-    /*
-	std::cout << "opencv test\n";
-	cv::Mat image;
-	image = cv::imread("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style1_6.JPG", cv::IMREAD_COLOR);
-	cv::namedWindow("Display2", cv::WINDOW_AUTOSIZE);
-	cv::imshow("Display2", image);
-	cv::waitKey(0);
-    
-
-    std::cout << "tesseract test\n";
-    char* outText;
-    tesseract::TessBaseAPI* api = new tesseract::TessBaseAPI();
-    // Initialize tesseract-ocr with English, without specifying tessdata path
-    if (api->Init(NULL, "eng")) {
-        fprintf(stderr, "Could not initialize tesseract.\n");
-        exit(1);
-    }
-    
-
-    // Open input image with leptonica library
-    setLeptDebugOK(1);
-    Pix* image = pixRead("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_6.JPG");
-    //pixDisplay(image, 0, 0);
-
-    std::cout << "image depth: " << pixGetDepth(image) << std::endl;
-    int width = pixGetWidth(image);
-    int height = pixGetHeight(image);
-    int depth = pixGetDepth(image);
-
-    // Convert input image to grayscale
-    Pix* gray = pixConvertRGBToGrayFast(image);
-
-    //pixDisplay(gray, 0, 0);
-
-    // Binarize the grayscale image using a threshold value of 128
-    Pix* bin_global = pixThresholdToBinary(gray, 128);
-
-
-    Pix* ppixth = pixCreate(width, height, 8);
-    Pix* ppixd = pixCreate(width, height, 8);
-    Pix* ppixd2 = pixCreate(width, height, 8);
-    Pix* ppixd3 = pixCreate(width, height, 8);
-
-    Pixa* pixa = pixaCreate(9);
-
-    int sx = 256;
-    int sy = sx;
-
-    for (int i = 0; i <= 2; i++)
-    {
-        pixOtsuAdaptiveThreshold(gray, sx, sy, i, i, 0, &ppixth, &ppixd);
-        pixOtsuAdaptiveThreshold(gray, sx, sy, i, i, 0.1, &ppixth, &ppixd2);
-        pixOtsuAdaptiveThreshold(gray, sx, sy, i, i, 0.2, &ppixth, &ppixd3);
-
-        pixaAddPix(pixa, ppixd, L_INSERT);
-        pixaAddPix(pixa, ppixd2, L_INSERT);
-        pixaAddPix(pixa, ppixd3, L_INSERT);
-
-        //pixWrite((filename+std::string("-0.jpg")).c_str(), ppixd, 1);
-    }
-
-    std::stringstream ss;
-    ss << "Style3_Otsu-" << sx << "-" << sy;
-    std::string filename = ss.str();
-
-    Pix* tiledPix = pixaDisplayTiledInColumns(pixa, 3, 1, 10, 1);
-    pixWrite((filename + std::string(".jpg")).c_str(), tiledPix, IFF_PNG);
-
-
-    /*
-    pixOtsuAdaptiveThreshold(gray, sx, sy, 0, 0, 0, &ppixth, &ppixd);
-    pixOtsuAdaptiveThreshold(gray, sx, sy, 1, 1, 0, &ppixth, &ppixd2);
-    pixOtsuAdaptiveThreshold(gray, sx, sy, 2, 2, 0, &ppixth, &ppixd3);
-    pixOtsuAdaptiveThreshold(gray, sx, sy, 0, 0, 0.1, &ppixth, &ppixd4);
-    pixOtsuAdaptiveThreshold(gray, sx, sy, 1, 1, 0.1, &ppixth, &ppixd5);
-    pixOtsuAdaptiveThreshold(gray, sx, sy, 2, 2, 0.1, &ppixth, &ppixd6);
-    //pixSauvolaBinarize(gray, 8, 0.2, 1, nullptr, nullptr, nullptr, nullptr);
-
-    //pixDisplayWithTitle(bin_global, 0, 0, "Global", 1);
-    pixWrite("gray.jpg", gray, 1);
-    //pixWrite("Otsu-th", gray, 1);
-    pixWrite("Otsu-24-24-0-0-0.jpg", ppixd, 1);
-    pixWrite("Otsu-24-24-1-1-0.jpg", ppixd2, 1);
-    pixWrite("Otsu-24-24-2-2-0.jpg", ppixd3, 1);
-    pixWrite("Otsu-24-24-1-1-01.jpg", ppixd4, 1);
-    pixWrite("Otsu-24-24-1-1-02.jpg", ppixd5, 1);
-
-    std::cout << "image depth: " << pixGetDepth(gray) << std::endl;
-    */
-
-    /*
-    api->SetImage(image);
-    // Get OCR result
-    outText = api->GetUTF8Text();
-    printf("OCR output:\n%s", outText);
-
-    // Destroy used object and release memory
-    api->End();
-    delete api;
-    delete[] outText;
-    pixDestroy(&image);
-    */
-    
-    //std::filesystem::create_directory("__output");
-    //attempt2("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_6.JPG");
-    //saveOtsuBinarizedImg("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_6.JPG", 20);
-    //edgeDetection("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_6.JPG");
-
-    Importer i;
-
-
-	return 0;
-
-}
+//int main()
+//{
+//    /*
+//	std::cout << "opencv test\n";
+//	cv::Mat image;
+//	image = cv::imread("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style1_6.JPG", cv::IMREAD_COLOR);
+//	cv::namedWindow("Display2", cv::WINDOW_AUTOSIZE);
+//	cv::imshow("Display2", image);
+//	cv::waitKey(0);
+//    
+//
+//    std::cout << "tesseract test\n";
+//    char* outText;
+//    tesseract::TessBaseAPI* api = new tesseract::TessBaseAPI();
+//    // Initialize tesseract-ocr with English, without specifying tessdata path
+//    if (api->Init(NULL, "eng")) {
+//        fprintf(stderr, "Could not initialize tesseract.\n");
+//        exit(1);
+//    }
+//    
+//
+//    // Open input image with leptonica library
+//    setLeptDebugOK(1);
+//    Pix* image = pixRead("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_6.JPG");
+//    //pixDisplay(image, 0, 0);
+//
+//    std::cout << "image depth: " << pixGetDepth(image) << std::endl;
+//    int width = pixGetWidth(image);
+//    int height = pixGetHeight(image);
+//    int depth = pixGetDepth(image);
+//
+//    // Convert input image to grayscale
+//    Pix* gray = pixConvertRGBToGrayFast(image);
+//
+//    //pixDisplay(gray, 0, 0);
+//
+//    // Binarize the grayscale image using a threshold value of 128
+//    Pix* bin_global = pixThresholdToBinary(gray, 128);
+//
+//
+//    Pix* ppixth = pixCreate(width, height, 8);
+//    Pix* ppixd = pixCreate(width, height, 8);
+//    Pix* ppixd2 = pixCreate(width, height, 8);
+//    Pix* ppixd3 = pixCreate(width, height, 8);
+//
+//    Pixa* pixa = pixaCreate(9);
+//
+//    int sx = 256;
+//    int sy = sx;
+//
+//    for (int i = 0; i <= 2; i++)
+//    {
+//        pixOtsuAdaptiveThreshold(gray, sx, sy, i, i, 0, &ppixth, &ppixd);
+//        pixOtsuAdaptiveThreshold(gray, sx, sy, i, i, 0.1, &ppixth, &ppixd2);
+//        pixOtsuAdaptiveThreshold(gray, sx, sy, i, i, 0.2, &ppixth, &ppixd3);
+//
+//        pixaAddPix(pixa, ppixd, L_INSERT);
+//        pixaAddPix(pixa, ppixd2, L_INSERT);
+//        pixaAddPix(pixa, ppixd3, L_INSERT);
+//
+//        //pixWrite((filename+std::string("-0.jpg")).c_str(), ppixd, 1);
+//    }
+//
+//    std::stringstream ss;
+//    ss << "Style3_Otsu-" << sx << "-" << sy;
+//    std::string filename = ss.str();
+//
+//    Pix* tiledPix = pixaDisplayTiledInColumns(pixa, 3, 1, 10, 1);
+//    pixWrite((filename + std::string(".jpg")).c_str(), tiledPix, IFF_PNG);
+//
+//
+//    /*
+//    pixOtsuAdaptiveThreshold(gray, sx, sy, 0, 0, 0, &ppixth, &ppixd);
+//    pixOtsuAdaptiveThreshold(gray, sx, sy, 1, 1, 0, &ppixth, &ppixd2);
+//    pixOtsuAdaptiveThreshold(gray, sx, sy, 2, 2, 0, &ppixth, &ppixd3);
+//    pixOtsuAdaptiveThreshold(gray, sx, sy, 0, 0, 0.1, &ppixth, &ppixd4);
+//    pixOtsuAdaptiveThreshold(gray, sx, sy, 1, 1, 0.1, &ppixth, &ppixd5);
+//    pixOtsuAdaptiveThreshold(gray, sx, sy, 2, 2, 0.1, &ppixth, &ppixd6);
+//    //pixSauvolaBinarize(gray, 8, 0.2, 1, nullptr, nullptr, nullptr, nullptr);
+//
+//    //pixDisplayWithTitle(bin_global, 0, 0, "Global", 1);
+//    pixWrite("gray.jpg", gray, 1);
+//    //pixWrite("Otsu-th", gray, 1);
+//    pixWrite("Otsu-24-24-0-0-0.jpg", ppixd, 1);
+//    pixWrite("Otsu-24-24-1-1-0.jpg", ppixd2, 1);
+//    pixWrite("Otsu-24-24-2-2-0.jpg", ppixd3, 1);
+//    pixWrite("Otsu-24-24-1-1-01.jpg", ppixd4, 1);
+//    pixWrite("Otsu-24-24-1-1-02.jpg", ppixd5, 1);
+//
+//    std::cout << "image depth: " << pixGetDepth(gray) << std::endl;
+//    */
+//
+//    /*
+//    api->SetImage(image);
+//    // Get OCR result
+//    outText = api->GetUTF8Text();
+//    printf("OCR output:\n%s", outText);
+//
+//    // Destroy used object and release memory
+//    api->End();
+//    delete api;
+//    delete[] outText;
+//    pixDestroy(&image);
+//    */
+//    
+//    //std::filesystem::create_directory("__output");
+//    //attempt2("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_6.JPG");
+//    //saveOtsuBinarizedImg("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_6.JPG", 20);
+//    //edgeDetection("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_6.JPG");
+//
+//    Importer i;
+//
+//
+//	return 0;
+//
+//}
 
 
 void convertImageToText(std::string imgPath)
@@ -531,17 +531,6 @@ void convertImageToText(std::string imgPath)
 Importer::Importer()
 {
     InitilizeTesseract();
-
-
-    Logger::getInstance(Logger::DEBUG);
-    auto a = ExtractWishesFromImage("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_5.JPG");
-    for (auto& wish : a) {
-        log(std::format("Wish - itemType: {}, itemName: {}, date: {}, rarity: {}", wish.itemType, wish.itemName, wish.date, wish.itemRarity));
-    }
-    a = ExtractWishesFromImage("D:/Repo/c++/genshin-wish-viewer-cpp/importer/importerTest/img/Style3_6.JPG");
-    for (auto& wish : a) {
-        log(std::format("Wish - itemType: {}, itemName: {}, date: {}, rarity: {}", wish.itemType, wish.itemName, wish.date, wish.itemRarity));
-    }
 }
 
 Importer::~Importer()
@@ -588,15 +577,19 @@ std::string Importer::ExtractTextFromPix(Pix* image)
 
 unsigned int Importer::ExtractRarityFromText(std::string& itemName)
 {
-    if (itemName.find("4-Star") != std::string::npos) {
+    size_t pos = itemName.find("4-Star");
+    if (pos != std::string::npos) {
+        itemName = itemName.substr(0, pos - 2); // 2 chars for ' ('
         return 4u;
     }
-    else if (itemName.find("5-Star") != std::string::npos) {
+
+    pos = itemName.find("5-Star");
+    if (pos != std::string::npos) {
+        itemName = itemName.substr(0, pos - 2); // 2 chars for ' ('
         return 5u;
     }
-    else {
-        return 3u;
-    }
+
+    return 3u;
 }
 
 std::vector<wishEntry> Importer::ExtractWishFromPixPos(const PixPos& pp)
@@ -646,6 +639,10 @@ std::vector<std::vector<PixPos>> Importer::combinePixPos(std::vector<PixPos>& pp
     }
     else if (ppVec.size() % 3 == 0) {
         // old-style wish
+        for (int i = 0; i < ppVec.size(); i += 3) {
+            std::vector<PixPos> temp{ ppVec[i], ppVec[i + 1], ppVec[i + 2] };
+            retVec.emplace_back(temp);
+        }
     }
     else {
         // something went wrong

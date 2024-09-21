@@ -16,9 +16,9 @@ add_library(logger ${LOGGER_HEADER} ${LOGGER_SOURCE})
 #target_include_directories(logger PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET logger PROPERTY CXX_STANDARD 20)
+	set_property(TARGET logger PROPERTY CXX_STANDARD 20)
 endif()
 
-#if (BUILD_TESTING)
-#	add_subdirectory (loggerTest)
-#endif()
+if (BUILD_TESTING)
+	add_subdirectory (loggerTest)
+endif()

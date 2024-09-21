@@ -18,9 +18,9 @@ add_library(db ${DATABASE_HEADER} ${DATABASE_SOURCE})
 #add_executable(db ${DATABASE_HEADER} ${DATABASE_SOURCE})
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET db PROPERTY CXX_STANDARD 20)
+	set_property(TARGET db PROPERTY CXX_STANDARD 20)
 endif()
 
-#if (BUILD_TESTING)
+if (BUILD_TESTING)
 	add_subdirectory (databaseTest)
-#endif()
+endif()
