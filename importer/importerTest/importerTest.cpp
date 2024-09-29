@@ -27,7 +27,7 @@ public:
 
 TEST_F(ImporterSuite, ExtractTextFromImageStyle1_1)
 {
-	std::filesystem::path imgPath{ "img\\Style1_1.JPG" };
+	std::filesystem::path imgPath{ "img/Style1_1.JPG" };
 	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
 
 	wishEntry wish1("Weapon", "Rust", "2021-06-01 10:59:22", 4);
@@ -48,7 +48,7 @@ TEST_F(ImporterSuite, ExtractTextFromImageStyle1_1)
 
 TEST_F(ImporterSuite, ExtractTextFromImageStyle1_2)
 {
-	std::filesystem::path imgPath{ "img\\Style1_2.JPG" };
+	std::filesystem::path imgPath{ "img/Style1_2.JPG" };
 	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
 
 	
@@ -68,9 +68,134 @@ TEST_F(ImporterSuite, ExtractTextFromImageStyle1_2)
 	}
 }
 
+TEST_F(ImporterSuite, ExtractTextFromImageStyle1_3)
+{
+	std::filesystem::path imgPath{ "img/Style1_3.JPG" };
+	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
+
+	wishEntry wish1("Weapon", "Cool Steel", "2020-11-07 14:53:16", 3);
+	wishEntry wish2("Weapon", "Harbinger of Dawn", "2020-11-07 14:53:16", 3);
+	wishEntry wish3("Weapon", "Skyrider Sword", "2020-11-07 14:53:16", 3);
+	wishEntry wish4("Weapon", "Ferrous Shadow", "2020-11-07 14:53:16", 3);
+	wishEntry wish5("Weapon", "Emerald Orb", "2020-11-07 14:53:16", 3);
+	wishEntry wish6("Character", "Diluc", "2020-11-07 14:53:16", 5);
+	std::vector<wishEntry> wishList = { wish1, wish2, wish3, wish4, wish5, wish6 };
+
+	auto importer = Importer();
+	auto wishList2 = importer.ExtractWishesFromImage(imgPath.string());
+
+	for (int i = 0; i < wishList.size(); i++)
+	{
+		EXPECT_EQ(wishList[i].itemType, wishList2[i].itemType);
+		EXPECT_EQ(wishList[i].itemName, wishList2[i].itemName);
+		EXPECT_EQ(wishList[i].date, wishList2[i].date);
+		EXPECT_EQ(wishList[i].itemRarity, wishList2[i].itemRarity);
+	}
+}
+
+TEST_F(ImporterSuite, ExtractTextFromImageStyle1_4)
+{
+	std::filesystem::path imgPath{ "img/Style1_4.JPG" };
+	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
+
+	wishEntry wish1("Weapon", "Skyrider Sword", "2021-11-02 21:01:22", 3);
+	wishEntry wish2("Character", "Sayu", "2021-11-02 21:00:50", 4);
+	wishEntry wish3("Character", "Yanfei", "2021-11-02 21:00:50", 4);
+	wishEntry wish4("Weapon", "Thrilling Tales of Dragon Slayers", "2021-11-02 21:00:50", 3);
+	wishEntry wish5("Character", "Thoma", "2021-11-02 21:00:50", 4);
+	wishEntry wish6("Weapon", "Thrilling Tales of Dragon Slayers", "2021-11-02 21:00:50", 3);
+	std::vector<wishEntry> wishList = { wish1, wish2, wish3, wish4, wish5, wish6 };
+
+	auto importer = Importer();
+	auto wishList2 = importer.ExtractWishesFromImage(imgPath.string());
+
+	for (int i = 0; i < wishList.size(); i++)
+	{
+		EXPECT_EQ(wishList[i].itemType, wishList2[i].itemType);
+		EXPECT_EQ(wishList[i].itemName, wishList2[i].itemName);
+		EXPECT_EQ(wishList[i].date, wishList2[i].date);
+		EXPECT_EQ(wishList[i].itemRarity, wishList2[i].itemRarity);
+	}
+}
+
+TEST_F(ImporterSuite, ExtractTextFromImageStyle2_1)
+{
+	std::filesystem::path imgPath{ "img/Style2_1.JPG" };
+	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
+
+	wishEntry wish1("Character", "Razor", "2022-04-29 00:38:33", 4);
+	wishEntry wish2("Weapon", "Emerald Orb", "2022-04-29 00:38:29", 3);
+	wishEntry wish3("Weapon", "Skyrider Sword", "2022-04-29 00:38:26", 3);
+	wishEntry wish4("Weapon", "Emerald Orb", "2022-04-29 00:38:21", 3);
+	wishEntry wish5("Weapon", "Skyrider Sword", "2022-04-29 00:38:17", 3);
+	wishEntry wish6("Weapon", "Skyrider Sword", "2022-04-29 00:38:10", 3);
+	std::vector<wishEntry> wishList = { wish1, wish2, wish3, wish4, wish5, wish6 };
+
+	auto importer = Importer();
+	auto wishList2 = importer.ExtractWishesFromImage(imgPath.string());
+
+	for (int i = 0; i < wishList.size(); i++)
+	{
+		EXPECT_EQ(wishList[i].itemType, wishList2[i].itemType);
+		EXPECT_EQ(wishList[i].itemName, wishList2[i].itemName);
+		EXPECT_EQ(wishList[i].date, wishList2[i].date);
+		EXPECT_EQ(wishList[i].itemRarity, wishList2[i].itemRarity);
+	}
+}
+
+TEST_F(ImporterSuite, ExtractTextFromImageStyle2_2)
+{
+	std::filesystem::path imgPath{ "img/Style2_2.JPG" };
+	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
+
+	wishEntry wish1("Weapon", "Thrilling Tales of Dragon Slayers", "2022-07-22 22:59:04", 3);
+	wishEntry wish2("Weapon", "Skyrider Sword", "2022-07-22 22:59:04", 3);
+	wishEntry wish3("Character", "Shikanoin Heizou", "2022-07-22 22:59:04", 4);
+	wishEntry wish4("Weapon", "Cool Steel", "2022-07-22 22:59:04", 3);
+	wishEntry wish5("Weapon", "Emerald Orb", "2022-07-22 22:59:04", 3);
+	wishEntry wish6("Weapon", "Raven Bow", "2022-07-22 22:59:04", 3);
+	std::vector<wishEntry> wishList = { wish1, wish2, wish3, wish4, wish5, wish6 };
+
+	auto importer = Importer();
+	auto wishList2 = importer.ExtractWishesFromImage(imgPath.string());
+
+	for (int i = 0; i < wishList.size(); i++)
+	{
+		EXPECT_EQ(wishList[i].itemType, wishList2[i].itemType);
+		EXPECT_EQ(wishList[i].itemName, wishList2[i].itemName);
+		EXPECT_EQ(wishList[i].date, wishList2[i].date);
+		EXPECT_EQ(wishList[i].itemRarity, wishList2[i].itemRarity);
+	}
+}
+
+TEST_F(ImporterSuite, ExtractTextFromImageStyle2_3)
+{
+	std::filesystem::path imgPath{ "img/Style2_3.JPG" };
+	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
+
+	wishEntry wish1("Character", "Razor", "2022-01-28 21:56:11", 4);
+	wishEntry wish2("Weapon", "Thrilling Tales of Dragon Slayers", "2022-01-28 21:56:07", 3);
+	wishEntry wish3("Weapon", "Raven Bow", "2022-01-28 21:56:01", 3);
+	wishEntry wish4("Character", "Ganyu", "2022-01-28 21:50:50", 5);
+	wishEntry wish5("Weapon", "Harbinger of Dawn", "2022-01-28 21:50:46", 3);
+	wishEntry wish6("Weapon", "Raven Bow", "2022-01-28 21:50:42", 3);
+	std::vector<wishEntry> wishList = { wish1, wish2, wish3, wish4, wish5, wish6 };
+
+	auto importer = Importer();
+	auto wishList2 = importer.ExtractWishesFromImage(imgPath.string());
+
+	for (int i = 0; i < wishList.size(); i++)
+	{
+		EXPECT_EQ(wishList[i].itemType, wishList2[i].itemType);
+		EXPECT_EQ(wishList[i].itemName, wishList2[i].itemName);
+		EXPECT_EQ(wishList[i].date, wishList2[i].date);
+		EXPECT_EQ(wishList[i].itemRarity, wishList2[i].itemRarity);
+	}
+}
+
 TEST_F(ImporterSuite, ExtractTextFromImageStyle3_1)
 {
-	std::filesystem::path imgPath{ "img\\Style3_1.JPG" };
+	std::filesystem::path imgPath{ "img/Style3_1.JPG" };
 	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
 
 	wishEntry wish1("Weapon", "Debate Club", "2023-04-12 10:28:52", 3);
@@ -94,7 +219,7 @@ TEST_F(ImporterSuite, ExtractTextFromImageStyle3_1)
 
 TEST_F(ImporterSuite, ExtractTextFromImageStyle3_2)
 {
-	std::filesystem::path imgPath{ "img\\Style3_2.JPG" };
+	std::filesystem::path imgPath{ "img/Style3_2.JPG" };
 	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
 
 	wishEntry wish1("Weapon", "Black Tassel", "2023-04-17 12:36:02", 3);
@@ -118,7 +243,7 @@ TEST_F(ImporterSuite, ExtractTextFromImageStyle3_2)
 
 TEST_F(ImporterSuite, ExtractTextFromImageStyle3_3)
 {
-	std::filesystem::path imgPath{ "img\\Style3_3.JPG"};
+	std::filesystem::path imgPath{ "img/Style3_3.JPG"};
 	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
 
 	wishEntry wish1("Weapon", "Cool Steel", "2022-11-02 11:35:09", 3);
@@ -142,7 +267,7 @@ TEST_F(ImporterSuite, ExtractTextFromImageStyle3_3)
 
 TEST_F(ImporterSuite, ExtractTextFromImageStyle3_4)
 {
-	std::filesystem::path imgPath{ "img\\Style3_4.JPG" };
+	std::filesystem::path imgPath{ "img/Style3_4.JPG" };
 	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
 
 	wishEntry wish1("Weapon", "Emerald Orb", "2023-04-17 12:37:34", 3);
@@ -166,7 +291,7 @@ TEST_F(ImporterSuite, ExtractTextFromImageStyle3_4)
 
 TEST_F(ImporterSuite, ExtractTextFromImageStyle3_5)
 {
-	std::filesystem::path imgPath{ "img\\Style3_5.JPG" };
+	std::filesystem::path imgPath{ "img/Style3_5.JPG" };
 	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
 
 	wishEntry wish1("Character", "Collei", "2022-08-24 22:12:51", 4);

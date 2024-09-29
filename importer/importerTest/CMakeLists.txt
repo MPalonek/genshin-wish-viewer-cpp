@@ -25,14 +25,16 @@ set(TEST_IMG_DIR "${CMAKE_SOURCE_DIR}/importer/importerTest/img")
 
 # Get the output directory based on the current configuration (Debug, Release, etc.)
 set(OUTPUT_DIR "$<TARGET_FILE_DIR:importerTest>/img")
+set(OUTPUT_DIR2 "$<TARGET_FILE_DIR:importerTest>/../img") # specifically for VisualStudio debugger path
 
-# Add a custom command to copy the testImg directory to the output folder
+# Add a custom command to copy the test images directory to the output folder
 add_custom_command(
     TARGET importerTest
     PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "${TEST_IMG_DIR}"		# Source directory (to copy from)
-    "${OUTPUT_DIR}"			# Destination directory (to copy to)
+		"${TEST_IMG_DIR}" "${OUTPUT_DIR}"
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${TEST_IMG_DIR}" "${OUTPUT_DIR2}"
     COMMENT "Copying img directory to output..."
 )
 

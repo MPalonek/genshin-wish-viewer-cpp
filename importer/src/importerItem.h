@@ -16,6 +16,11 @@ struct Position
 	Position(const Position& pos_) : x(pos_.x), y(pos_.y), w(pos_.w), h(pos_.h) {}
 	Position(int x_, int y_, int w_, int h_) : x(x_), y(y_), w(w_), h(h_) {}
 	Box* CreateBox() { return boxCreate(x, y, w, h); } // you have to do boxDestroy() after!
+	double x1() const { return x + w; }
+	double y1() const { return y + h; }
+	bool operator==(const Position& other) const {
+		return x == other.x && y == other.y && w == other.w && h == other.h;
+	}
 };
 
 struct PixPos
@@ -41,6 +46,10 @@ private:
 	void ProcessImage();
 	void FindTextPositons();
 	void ValidateAndReorganizeBoxPix();
+
+
+	bool DoIntersect(const Position& a, const Position& b);
+	void MergeBoxes(const Position& a, const Position& b);
 
 	// Functions for debugging
 	void SaveImageAsCsv();

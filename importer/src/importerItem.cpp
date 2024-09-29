@@ -62,7 +62,7 @@ void ImporterItem::BinarizeImage()
     pixDestroy(&pixThreshold);
 
     // To display image you need IrfanView
-    //setLeptDebugOK(1);
+    setLeptDebugOK(1);
     //pixDisplay(m_binaryImage, 0, 0);
 }
 
@@ -73,13 +73,15 @@ void ImporterItem::ProcessImage()
     Pix* erode = pixErode(NULL, m_binaryImage, selE);
 
     // dilate - to make big what was left after erosion (preferably blobs were text is)
-    SEL* selD = selCreateBrick(3, 32, 1, 15, SEL_HIT); // check out this special mask! 
+    SEL* selD = selCreateBrick(5, 32, 2, 15, SEL_HIT); // check out this special mask! 
     Pix* dilate = pixDilate(NULL, erode, selD);
+    //pixDisplay(dilate, 0, 0);
 
     // close - to get even better blobs were text is
     SEL* selC = selCreateBrick(9, 9, 4, 4, SEL_HIT);
     m_blobsBinaryImage = pixCreate(m_width, m_height, 8);
     pixClose(m_blobsBinaryImage, dilate, selC);
+    //pixDisplay(m_blobsBinaryImage, 0, 0);
 
     log(std::format("Processed image"), Logger::DEBUG);
 
@@ -129,6 +131,56 @@ bool comparePositions(const PixPos& a, const PixPos& b) {
     return a.pos.y < b.pos.y;     // Otherwise, compare y
 }
 
+
+
+bool ImporterItem::DoIntersect(const Position& a, const Position& b) {
+    log(std::format("a.x: {}, b.x1() {}, a.x1(): {}, b.x {}", a.x, b.x1(), a.x1(), b.x), Logger::DEBUG);
+    log(std::format("a.y: {}, b.y1() {}, a.y1(): {}, b.y {}", a.y, b.y1(), a.y1(), b.y), Logger::DEBUG);
+    return (a.x < b.x1() && a.x1() > b.x && a.y < b.y1() && a.y1() > b.y);
+}
+
+void ImporterItem::MergeBoxes(const Position& a, const Position& b) {
+    // Find the top-left corner (smallest x and y)
+    int merged_x = std::min(a.x, b.x);
+    int merged_y = std::min(a.y, b.y);
+
+    // Find the bottom-right corner (largest x_max and y_max)
+    int merged_x_max = std::max(a.x1(), b.x1());
+    int merged_y_max = std::max(a.y1(), b.y1());
+
+    // Calculate the new width and height
+    int merged_w = merged_x_max - merged_x;
+    int merged_h = merged_y_max - merged_y;
+
+    // Replace the box
+    // 1. Find the box in the vector
+    auto boxesToRemove = { a, b };
+    for (auto boxToRemove : boxesToRemove) {
+        auto it = std::find_if(m_textPixPos.begin(), m_textPixPos.end(),
+            [&boxToRemove](const PixPos& item) {
+                return item.pos == boxToRemove; // Compare based on the Box part of the struct
+            });
+
+        if (it != m_textPixPos.end()) {
+            std::cout << "Box found, removing it!" << std::endl;
+            // 2. Remove the box from the vector
+            m_textPixPos.erase(it);
+        }
+        else {
+            std::cout << "Box not found!" << std::endl;
+        }
+    }
+
+    // 2. Insert merged box
+    Position pos(merged_x, merged_y, merged_w, merged_h);
+    Box* expandedBox = pos.CreateBox();
+    m_textPixPos.emplace_back(PixPos{ pixClipRectangle(m_binaryImage, expandedBox, NULL), pos });
+    
+
+}
+
+
+
 void ImporterItem::ValidateAndReorganizeBoxPix()
 {
     if ((m_textPixPos.size() % 4 == 0) || (m_textPixPos.size() % 3 == 0)) {
@@ -136,10 +188,31 @@ void ImporterItem::ValidateAndReorganizeBoxPix()
     }
     else {
         log(std::format("Validation error - got {} text blobs.", m_textPixPos.size()), Logger::ERROR);
+        //DisplayImageWithBoxes();
+
+        bool found{ false };
+
+        for (int i = 0; i < m_textPixPos.size(); ++i)
+        {
+            for (int j = 0; j < m_textPixPos.size(); ++j)
+            {
+                if ( i!=j && DoIntersect(m_textPixPos[i].pos, m_textPixPos[j].pos)) {
+                    MergeBoxes(m_textPixPos[i].pos, m_textPixPos[j].pos);
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                break;
+            }
+        }
+
+        if (found) {
+            ValidateAndReorganizeBoxPix();
+            //DisplayImageWithBoxes();
+        }
+
     }
-
-    // 
-
 }
 
 void ImporterItem::SaveImageAsCsv()
