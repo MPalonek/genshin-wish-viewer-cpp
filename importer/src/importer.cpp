@@ -612,7 +612,8 @@ std::vector<wishEntry> Importer::ExtractWishesFromImage(const std::string& imgPa
         std::string itemType = ExtractTextFromPix(pixposPacket[0].pix);
         std::string itemName = ExtractTextFromPix(pixposPacket[1].pix);
         std::string date = ExtractTextFromPix(pixposPacket[2].pix);
-        wishEntry wish{ itemType, itemName, date, ExtractRarityFromText(itemName) };
+        unsigned int rarity = ExtractRarityFromText(itemName);
+        wishEntry wish{ itemType, itemName, date, rarity };
         wishVec.emplace_back(wish);
     }
 

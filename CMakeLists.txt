@@ -2,8 +2,11 @@
 # and include sub-projects here.
 #
 cmake_minimum_required (VERSION 3.8)
-cmake_policy(SET CMP0091 NEW) # for MSVC_RUNTIME_LIBRARY
-cmake_policy(SET CMP0135 NEW) # for FetchConent DOWNLOAD_EXTRACT_TIMESTAMP option
+if(WIN32)
+	cmake_policy(SET CMP0091 NEW) # for MSVC_RUNTIME_LIBRARY
+	cmake_policy(SET CMP0135 NEW) # for FetchConent DOWNLOAD_EXTRACT_TIMESTAMP option
+endif()
+
 project ("genshin-wish-viewer")
 
 message("Genshin Wish Viewer...")
@@ -28,13 +31,6 @@ if(BUILD_TESTING)
 
 else()
 	message("Build Testing disabled")
-endif()
-
-if(WIN32)
-	# # Set the runtime library for the Release configuration
-	# set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
-	# # Set the runtime library for the Debug configuration
-	# set(CMAKE_MSVC_RUNTIME_LIBRARY_DEBUG "MultiThreadedDebug")
 endif()
 
 # Set default build type to Release if none is specified
