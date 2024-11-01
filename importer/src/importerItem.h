@@ -47,7 +47,6 @@ private:
 	void FindTextPositons();
 	void ValidateAndReorganizeBoxPix();
 
-
 	bool DoIntersect(const Position& a, const Position& b);
 	void MergeBoxes(const Position& a, const Position& b);
 

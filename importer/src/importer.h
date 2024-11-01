@@ -36,31 +36,25 @@ class Importer
 public:
 	Importer();
 	~Importer();
-
-	void InitilizeTesseract();
-	void CleanupTesseract();
-	std::string ExtractTextFromPix(Pix* image);
-	std::vector<wishEntry> ExtractWishFromPixPos(const PixPos& pp);
-
+	
 	std::vector<wishEntry> ExtractWishesFromImage(const std::string& imgPath);
-	unsigned int ExtractRarityFromText(std::string& itemName);
-
-	std::vector<std::vector<PixPos>> combinePixPos(std::vector<PixPos>& ppVec);
-
-
 
 private:
 	std::mutex m_tesseractApiMutex;
 	tesseract::TessBaseAPI* m_tesseractApi;
 	char* m_tesseractOutputText;
 
+	void InitilizeTesseract();
+	void CleanupTesseract();
+	std::vector<std::vector<PixPos>> combinePixPos(std::vector<PixPos>& ppVec);
+	std::string ExtractTextFromPix(Pix* image);
+	unsigned int ExtractRarityFromText(std::string& itemName);
 	void StripString(std::string& str);
+	void ReplaceWeirdCharsInString(std::string& str);
 
 	void log(const std::string& log, Logger::logLevel level = Logger::INFO) {
 		Logger::getInstance().addLog("Importer", log, level);
 	}
-
 };
-void saveOtsuBinarizedImg(std::string filename, int matrixSize);
 
 #endif /* IMPORTER_H */

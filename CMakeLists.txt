@@ -4,8 +4,8 @@
 cmake_minimum_required (VERSION 3.8)
 if(WIN32)
 	cmake_policy(SET CMP0091 NEW) # for MSVC_RUNTIME_LIBRARY
-	cmake_policy(SET CMP0135 NEW) # for FetchConent DOWNLOAD_EXTRACT_TIMESTAMP option
 endif()
+cmake_policy(SET CMP0135 NEW) # for FetchConent DOWNLOAD_EXTRACT_TIMESTAMP option
 
 project ("genshin-wish-viewer")
 
