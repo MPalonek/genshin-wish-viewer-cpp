@@ -717,6 +717,30 @@ TEST_F(ImporterSuite, ExtractTextFromImageStyle3_07)
 	std::filesystem::path imgPath{ "img/Style3_07.JPG" };
 	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
 
+	wishEntry wish1("Weapon", "Emerald Orb", "2024-01-09 20:55:50", 3);
+	wishEntry wish2("Weapon", "Sacrificial Fragments", "2024-01-09 20:55:50", 4);
+	wishEntry wish3("Weapon", "Cool Steel", "2024-01-09 20:55:50", 3);
+	wishEntry wish4("Weapon", "Black Tassel", "2024-01-09 20:55:50", 3);
+	wishEntry wish5("Weapon", "Debate Club", "2024-01-09 20:55:50", 3);
+	std::vector<wishEntry> wishList = { wish1, wish2, wish3, wish4, wish5 };
+
+	auto importer = Importer();
+	auto wishList2 = importer.ExtractWishesFromImage(imgPath.string());
+
+	for (int i = 0; i < wishList.size(); i++)
+	{
+		EXPECT_EQ(wishList[i].itemType, wishList2[i].itemType);
+		EXPECT_EQ(wishList[i].itemName, wishList2[i].itemName);
+		EXPECT_EQ(wishList[i].date, wishList2[i].date);
+		EXPECT_EQ(wishList[i].itemRarity, wishList2[i].itemRarity);
+	}
+}
+
+TEST_F(ImporterSuite, ExtractTextFromImageStyle3_08)
+{
+	std::filesystem::path imgPath{ "img/Style3_08.JPG" };
+	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
+
 	wishEntry wish1("Weapon", "Harbinger of Dawn", "2024-04-21 10:49:22", 3);
 	wishEntry wish2("Weapon", "Skyrider Sword", "2024-04-21 10:49:22", 3);
 	wishEntry wish3("Weapon", "Slingshot", "2024-04-21 10:49:22", 3);
@@ -736,9 +760,9 @@ TEST_F(ImporterSuite, ExtractTextFromImageStyle3_07)
 	}
 }
 
-TEST_F(ImporterSuite, ExtractTextFromImageStyle3_08)
+TEST_F(ImporterSuite, ExtractTextFromImageStyle3_09)
 {
-	std::filesystem::path imgPath{ "img/Style3_08.JPG" };
+	std::filesystem::path imgPath{ "img/Style3_09.JPG" };
 	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
 
 	wishEntry wish1("Weapon", "Bloodtainted Greatsword", "2024-04-21 10:50:25", 3);
@@ -760,9 +784,9 @@ TEST_F(ImporterSuite, ExtractTextFromImageStyle3_08)
 	}
 }
 
-TEST_F(ImporterSuite, ExtractTextFromImageStyle3_09)
+TEST_F(ImporterSuite, ExtractTextFromImageStyle3_10)
 {
-	std::filesystem::path imgPath{ "img/Style3_09.JPG" };
+	std::filesystem::path imgPath{ "img/Style3_10.JPG" };
 	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
 
 	wishEntry wish1("Weapon", "Sacrificial Bow", "2024-07-09 23:29:11", 4);
@@ -784,9 +808,9 @@ TEST_F(ImporterSuite, ExtractTextFromImageStyle3_09)
 	}
 }
 
-TEST_F(ImporterSuite, ExtractTextFromImageStyle3_10)
+TEST_F(ImporterSuite, ExtractTextFromImageStyle3_11)
 {
-	std::filesystem::path imgPath{ "img/Style3_10.JPG" };
+	std::filesystem::path imgPath{ "img/Style3_11.JPG" };
 	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
 
 	wishEntry wish1("Weapon", "Debate Club", "2024-07-09 23:29:11", 3);
@@ -808,9 +832,33 @@ TEST_F(ImporterSuite, ExtractTextFromImageStyle3_10)
 	}
 }
 
-TEST_F(ImporterSuite, ExtractTextFromImageStyle3_11)
+TEST_F(ImporterSuite, ExtractTextFromImageStyle3_12)
 {
-	std::filesystem::path imgPath{ "img/Style3_11.JPG" };
+	std::filesystem::path imgPath{ "img/Style3_12.JPG" };
+	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
+
+	wishEntry wish1("Weapon", "Harbinger of Dawn", "2024-07-17 10:22:15", 3);
+	wishEntry wish2("Weapon", "Thrilling Tales of Dragon Slayers", "2024-07-17 10:22:15", 3);
+	wishEntry wish3("Weapon", "Sacrificial Fragments", "2024-07-17 10:22:15", 4);
+	wishEntry wish4("Weapon", "Skyrider Sword", "2024-07-17 10:22:15", 3);
+	wishEntry wish5("Weapon", "Raven Bow", "2024-07-17 10:22:15", 3);
+	std::vector<wishEntry> wishList = { wish1, wish2, wish3, wish4, wish5 };
+
+	auto importer = Importer();
+	auto wishList2 = importer.ExtractWishesFromImage(imgPath.string());
+
+	for (int i = 0; i < wishList.size(); i++)
+	{
+		EXPECT_EQ(wishList[i].itemType, wishList2[i].itemType);
+		EXPECT_EQ(wishList[i].itemName, wishList2[i].itemName);
+		EXPECT_EQ(wishList[i].date, wishList2[i].date);
+		EXPECT_EQ(wishList[i].itemRarity, wishList2[i].itemRarity);
+	}
+}
+
+TEST_F(ImporterSuite, ExtractTextFromImageStyle3_13)
+{
+	std::filesystem::path imgPath{ "img/Style3_13.JPG" };
 	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
 
 	wishEntry wish1("Weapon", "Ferrous Shadow", "2024-07-18 20:36:03", 3);
@@ -832,9 +880,9 @@ TEST_F(ImporterSuite, ExtractTextFromImageStyle3_11)
 	}
 }
 
-TEST_F(ImporterSuite, ExtractTextFromImageStyle3_12)
+TEST_F(ImporterSuite, ExtractTextFromImageStyle3_14)
 {
-	std::filesystem::path imgPath{ "img/Style3_12.JPG" };
+	std::filesystem::path imgPath{ "img/Style3_14.JPG" };
 	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
 
 	wishEntry wish1("Weapon", "Rust", "2024-07-18 20:36:03", 4);
@@ -856,9 +904,9 @@ TEST_F(ImporterSuite, ExtractTextFromImageStyle3_12)
 	}
 }
 
-TEST_F(ImporterSuite, ExtractTextFromImageStyle3_13)
+TEST_F(ImporterSuite, ExtractTextFromImageStyle3_15)
 {
-	std::filesystem::path imgPath{ "img/Style3_13.JPG" };
+	std::filesystem::path imgPath{ "img/Style3_15.JPG" };
 	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
 
 	wishEntry wish1("Weapon", "Cool Steel", "2024-07-18 21:27:44", 3);
@@ -880,9 +928,9 @@ TEST_F(ImporterSuite, ExtractTextFromImageStyle3_13)
 	}
 }
 
-TEST_F(ImporterSuite, ExtractTextFromImageStyle3_14)
+TEST_F(ImporterSuite, ExtractTextFromImageStyle3_16)
 {
-	std::filesystem::path imgPath{ "img/Style3_14.JPG" };
+	std::filesystem::path imgPath{ "img/Style3_16.JPG" };
 	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
 
 	wishEntry wish1("Character", "Razor", "2024-07-18 21:27:44", 4);
@@ -904,78 +952,20 @@ TEST_F(ImporterSuite, ExtractTextFromImageStyle3_14)
 	}
 }
 
-/*
-TEST_F(SQLSuite, FirstTimeCreatingDbWithDiffFilename)
+TEST_F(ImporterSuite, ExtractTextFromImageStyle3_17)
 {
-	std::string filename = "customName.db";
-	std::unique_ptr<Database> db = std::make_unique<SQLDatabase>(filename);
+	std::filesystem::path imgPath{ "img/Style3_17.JPG" };
+	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
 
-	std::filesystem::path dbPath{ filename };
-	ASSERT_EQ(std::filesystem::exists(dbPath), true) << "Database file isn't created!";
+	wishEntry wish1("Weapon", "Thrilling Tales of Dragon Slayers", "2024-07-25 19:39:07", 3);
+	wishEntry wish2("Weapon", "Thrilling Tales of Dragon Slayers", "2024-07-25 19:39:07", 3);
+	wishEntry wish3("Weapon", "Thrilling Tales of Dragon Slayers", "2024-07-25 19:39:07", 3);
+	wishEntry wish4("Weapon", "Magic Guide", "2024-07-25 19:39:07", 3);
+	wishEntry wish5("Weapon", "Debate Club", "2024-07-25 19:39:07", 3);
+	std::vector<wishEntry> wishList = { wish1, wish2, wish3, wish4, wish5 };
 
-	sqlite3* cHandle;
-	int ret = sqlite3_open(filename.c_str(), &cHandle);
-
-	std::unordered_set<std::string> tables;
-	dbTest::getTables(cHandle, tables);
-
-	EXPECT_TRUE((tables.size() >= 5));
-	EXPECT_EQ(tables.contains("systemInfo"), true);
-	EXPECT_EQ(tables.contains("wishCharacter"), true);
-	EXPECT_EQ(tables.contains("wishWeapon"), true);
-	EXPECT_EQ(tables.contains("wishStandard"), true);
-	EXPECT_EQ(tables.contains("wishBeginner"), true);
-
-	int version = dbTest::getVersion(cHandle);
-	EXPECT_EQ(version, g_version);
-
-	sqlite3_close(cHandle);
-}
-
-TEST_F(SQLSuite, UpgradeDb)
-{
-	//TBD...
-}
-
-TEST_F(SQLSuite, DbNewerThanApp)
-{
-	//DeathTest
-}
-
-TEST_F(SQLSuite, InsertAndGetWish)
-{
-	std::unique_ptr<Database> db = std::make_unique<SQLDatabase>();
-	std::string tableName = "wishStandard";
-	wishEntry wish("Character", "Diluc", "2020-11-07 14:53:16", 5);
-	
-	db->insertWish(tableName, wish);
-	
-	std::vector<wishEntry> wishList;
-	db->getWishes(tableName, wishList);
-
-	EXPECT_EQ(wishList[0].itemType, wish.itemType);
-	EXPECT_EQ(wishList[0].itemName, wish.itemName);
-	EXPECT_EQ(wishList[0].date, wish.date);
-	EXPECT_EQ(wishList[0].itemRarity, wish.itemRarity);
-}
-
-TEST_F(SQLSuite, InsertAndGet6Wishes)
-{
-	std::unique_ptr<Database> db = std::make_unique<SQLDatabase>();
-	std::string tableName = "wishCharacter";
-
-	wishEntry wish1("Weapon", "Skyrider Sword", "2021-01-12 18:37:29", 3);
-	wishEntry wish2("Character", "Ganyu", "2021-01-12 18:37:29", 5);
-	wishEntry wish3("Weapon", "Raven Bow", "2021-01-12 18:39:21", 3);
-	wishEntry wish4("Character", "Xingqiu", "2021-01-12 18:39:21", 4);
-	wishEntry wish5("Weapon", "Magic Guide", "2021-01-12 18:39:21", 3);
-	wishEntry wish6("Weapon", "Slingshot", "2021-01-12 18:39:21", 3);
-	std::vector<wishEntry> wishList = { wish1, wish2, wish3, wish4, wish5, wish6 };
-
-	db->insertWishes(tableName, wishList);
-
-	std::vector<wishEntry> wishList2;
-	db->getWishes(tableName, wishList2);
+	auto importer = Importer();
+	auto wishList2 = importer.ExtractWishesFromImage(imgPath.string());
 
 	for (int i = 0; i < wishList.size(); i++)
 	{
@@ -985,4 +975,27 @@ TEST_F(SQLSuite, InsertAndGet6Wishes)
 		EXPECT_EQ(wishList[i].itemRarity, wishList2[i].itemRarity);
 	}
 }
-*/
+
+TEST_F(ImporterSuite, ExtractTextFromImageStyle3_18)
+{
+	std::filesystem::path imgPath{ "img/Style3_18.JPG" };
+	ASSERT_EQ(std::filesystem::exists(imgPath), true) << "Image file doesn't exist!";
+
+	wishEntry wish1("Character", "Kirara", "2024-07-27 20:46:37", 4);
+	wishEntry wish2("Weapon", "Raven Bow", "2024-07-27 20:46:37", 3);
+	wishEntry wish3("Weapon", "Bloodtainted Greatsword", "2024-07-27 20:46:37", 3);
+	wishEntry wish4("Weapon", "Bloodtainted Greatsword", "2024-07-27 20:46:37", 3);
+	wishEntry wish5("Weapon", "Cool Steel", "2024-07-27 20:46:37", 3);
+	std::vector<wishEntry> wishList = { wish1, wish2, wish3, wish4, wish5 };
+
+	auto importer = Importer();
+	auto wishList2 = importer.ExtractWishesFromImage(imgPath.string());
+
+	for (int i = 0; i < wishList.size(); i++)
+	{
+		EXPECT_EQ(wishList[i].itemType, wishList2[i].itemType);
+		EXPECT_EQ(wishList[i].itemName, wishList2[i].itemName);
+		EXPECT_EQ(wishList[i].date, wishList2[i].date);
+		EXPECT_EQ(wishList[i].itemRarity, wishList2[i].itemRarity);
+	}
+}

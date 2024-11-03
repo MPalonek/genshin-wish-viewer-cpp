@@ -8,6 +8,9 @@ ImporterItem::ImporterItem(std::string fileLocation) : m_imageLocation(fileLocat
 
 ImporterItem::~ImporterItem()
 {
+    pixDestroy(&m_image);
+    pixDestroy(&m_binaryImage);
+    pixDestroy(&m_blobsBinaryImage);
 }
 
 std::vector<PixPos>& ImporterItem::GetTextSnippets()
@@ -17,6 +20,7 @@ std::vector<PixPos>& ImporterItem::GetTextSnippets()
     ProcessImage();
     FindTextPositons();
     ValidateAndReorganizeBoxPix();
+    //PreprocessTextPixes();
     return m_textPixPos;
 }
 
@@ -30,6 +34,7 @@ void ImporterItem::LoadGrayscaleImage()
 
     // Convert input image to grayscale
     m_image = pixConvertRGBToGrayFast(image);
+    //SaveImageAsCsv(m_image);
 
     // Save dimensions
     m_width = pixGetWidth(m_image);
@@ -132,6 +137,7 @@ void ImporterItem::FindTextPositons()
 }
 
 // Custom comparator function for PixPos to sort by y first, then x
+// Specifically for wish images to sort boxes from left to right, from top to bottom
 bool comparePositions(const PixPos& a, const PixPos& b) {
     const int clearance = 20; // y values can vary a little bit
 
@@ -178,6 +184,92 @@ void ImporterItem::ValidateAndReorganizeBoxPix()
             exit(1); //maybe throw with meaningful message
         }
 
+    }
+}
+
+PIX* splitAndCombineVertically(PIX* binarizedPix) {
+    // Get the image dimensions
+    l_int32 width, height;
+    pixGetDimensions(binarizedPix, &width, &height, nullptr);
+
+    // Calculate half height
+    l_int32 halfHeight = height / 2;
+
+    // Split the image into top and bottom parts
+    PIX* topPart = pixClipRectangle(binarizedPix, boxCreate(0, 0, width, halfHeight), nullptr);
+    PIX* bottomPart = pixClipRectangle(binarizedPix, boxCreate(0, halfHeight, width, halfHeight), nullptr);
+
+    // Create a new image with double the width to place both parts side by side
+    PIX* combinedPix = pixCreate(width * 2, halfHeight, pixGetDepth(binarizedPix));
+
+    // Insert the top part on the left of the new image
+    pixRasterop(combinedPix, 0, 0, width, halfHeight, PIX_SRC, topPart, 0, 0);
+
+    // Insert the bottom part on the right of the new image
+    pixRasterop(combinedPix, width, 0, width, halfHeight, PIX_SRC, bottomPart, 0, 0);
+
+    // Add white border
+    l_int32 borderWidth = 3;
+    l_int32 whiteColor = 0;
+    PIX* borderedPix = pixAddBorder(combinedPix, borderWidth, whiteColor);
+
+    // Clean up
+    pixDestroy(&topPart);
+    pixDestroy(&bottomPart);
+    pixDestroy(&combinedPix);
+
+    return borderedPix;
+}
+
+void ImporterItem::PreprocessTextPixes()
+{
+    /*
+    SEL* selC = selCreateBrick(5, 5, 2, 2, SEL_HIT);
+    for (auto& pp : m_textPixPos) {
+        // Step 1: Upscale the image (e.g., by a factor of 2 or 3)
+        int scaleFactor = 3;
+        Pix* upscaled = pixScale(pp.pix, scaleFactor, scaleFactor);
+
+        // Step 2: Apply morphological closing on the larger image
+        Pix* closed = pixClose(NULL, upscaled, selC);
+        pixDestroy(&upscaled);  // Clean up the upscaled image
+
+        // Step 3: Downscale back to original size (invert the scale factor)
+        Pix* smoothed = pixScale(closed, 1.0 / scaleFactor, 1.0 / scaleFactor);
+        pixDestroy(&closed);    // Clean up the closed image
+
+        // Step 4: Optional - Add white border around the smoothed image
+        //int borderSize = 10;  // Adjust padding size if needed
+        //PIX* padded = pixAddBorder(pp.pix, borderSize, 0); // 0 for white border
+        //pixDestroy(&pp.pix); // Clean up the closed image as we don't need it anymore
+
+        // Step 5: Replace original image with processed image
+        pixDestroy(&pp.pix);    // Free the original pix
+        pp.pix = smoothed;
+    }*/
+
+    // Some text snips can be two lines close to each other
+    // They are so close, that tesseract OCR goes crazy
+    // So lets manually split them and merge into one line
+    // 
+    // In the end, it didnt work out - small pieces are left on edges and its hard to deal with them
+    // 
+    // Step 1: get height of top-left element (it should always be one-liner)
+    int twoLineHeight = m_textPixPos[0].pos.h * 1.5;
+    // Step 2: Split and merge
+    for (auto& pp : m_textPixPos) {
+        if (pp.pos.h >= twoLineHeight) {
+            PIX* newPix = splitAndCombineVertically(pp.pix);
+
+            //setLeptDebugOK(1);
+            //pixDisplay(pp.pix, 0, 0);
+            //pixDisplay(newPix, 0, 0);
+
+            pixDestroy(&pp.pix);
+            pp.pix = newPix;
+            log(std::format("splitAndCombine done!"));
+            // Hmm, probably should update pp.pos
+        }
     }
 }
 
@@ -229,10 +321,11 @@ void ImporterItem::MergeBoxes(const Position& a, const Position& b) {
     m_textPixPos.emplace_back(PixPos{ pixClipRectangle(m_binaryImage, expandedBox, NULL), pos });
 }
 
-void ImporterItem::SaveImageAsCsv()
+// You will get matrix of values from image
+void ImporterItem::SaveImageAsCsv(PIX* img)
 {
     // Get image dimensions
-    PIX* image = m_image;    
+    PIX* image = img;    
     l_int32 width, height;
     pixGetDimensions(image, &width, &height, NULL);
 
@@ -284,6 +377,65 @@ void ImporterItem::SaveImageAsCsv()
         plt.xlabel('Value')
         plt.ylabel('Frequency')
         plt.title('Histogram of Values')
+
+        # Show the plot
+        plt.show()
+    */
+}
+
+// Works only for binarized PIX
+// Will save count of black pixels per row
+void ImporterItem::SaveImageHorizontalProjectionAsCsv(Pix* img, std::string csvPath)
+{
+    // Get image dimensions
+    PIX* image = img;
+    l_int32 width, height;
+    pixGetDimensions(image, &width, &height, NULL);
+
+    // Open file for writing
+    if (csvPath.empty()) {
+        csvPath = "data.csv";
+    }
+    std::ofstream file(csvPath);
+    if (!file) {
+        //log("Error: Could not open file for writing.", Logger::ERROR);
+    }
+
+    // Count non-zero pixels by row
+    NUMA* counts = pixCountPixelsByRow(img, NULL);
+    if (!counts) {
+        //log("Failed to count pixels by row.", Logger::ERROR);
+    }
+
+    // Output results
+    std::vector<int> countVec{};
+    countVec.reserve(height);
+    for (int i = 0; i < numaGetCount(counts); i++) {
+        int countValue;
+        numaGetIValue(counts, i, &countValue);
+        countVec.push_back(countValue);
+        file << countValue << "\n";
+        //log(std::format("Row {}: Non-zero pixel count = {}\n", i, countValue), Logger::DEBUG);
+    }
+
+    // Close the file
+    file.close();
+
+    /*
+    Then to generate plot, run this script in python:
+        import matplotlib.pyplot as plt
+        import pandas as pd
+
+        # Read the CSV file into a DataFrame
+        data = pd.read_csv('..\\data.csv', header=None)
+
+        # Create a bar plot
+        plt.bar(data.index, data[0], color='steelblue')
+
+        # Add labels and title
+        plt.xlabel('Row')
+        plt.ylabel('Black Pixel Count')
+        plt.title('Distribution of Black Pixel Counts Across Rows')
 
         # Show the plot
         plt.show()

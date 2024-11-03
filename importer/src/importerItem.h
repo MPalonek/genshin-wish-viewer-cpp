@@ -30,6 +30,30 @@ struct PixPos
 	
 	PixPos() : pix(NULL), pos(0, 0, 0, 0) {}
 	PixPos(Pix* pix_, Position pos_) : pix(pix_), pos(pos_) {}
+	~PixPos() {
+		if (pix) { pixDestroy(&pix); }
+	}
+	// Copy constructor/assignment (deleted to avoid shallow copy)
+	PixPos(const PixPos&) = delete;
+	PixPos& operator=(const PixPos&) = delete;
+
+	// Move constructor
+	PixPos(PixPos&& other) noexcept : pix(other.pix), pos(other.pos) {
+		other.pix = nullptr;
+	}
+
+	// Move assignment operator
+	PixPos& operator=(PixPos&& other) noexcept {
+		if (this != &other) {
+			if (pix) {
+				pixDestroy(&pix);  // Free existing Pix memory
+			}
+			pix = other.pix;
+			pos = other.pos;
+			other.pix = nullptr;
+		}
+		return *this;
+	}
 };
 
 class ImporterItem
@@ -46,12 +70,14 @@ private:
 	void ProcessImage();
 	void FindTextPositons();
 	void ValidateAndReorganizeBoxPix();
+	void PreprocessTextPixes();
 
 	bool DoIntersect(const Position& a, const Position& b);
 	void MergeBoxes(const Position& a, const Position& b);
 
 	// Functions for debugging
-	void SaveImageAsCsv();
+	void SaveImageAsCsv(PIX* img);
+	static void SaveImageHorizontalProjectionAsCsv(Pix* img, std::string csvPath = "");
 	void DisplayImageWithBoxes();
 
 	std::string m_imageLocation;

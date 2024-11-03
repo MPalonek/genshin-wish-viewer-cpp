@@ -73,15 +73,21 @@ std::vector<std::vector<PixPos>> Importer::combinePixPos(std::vector<PixPos>& pp
     if (ppVec.size() % 4 == 0) {
         // new-style wish
         for (int i = 0; i < ppVec.size(); i += 4) {
-            std::vector<PixPos> temp{ ppVec[i], ppVec[i + 1], ppVec[i + 3] };
-            retVec.emplace_back(temp);
+            std::vector<PixPos> temp;
+            temp.emplace_back(std::move(ppVec[i]));
+            temp.emplace_back(std::move(ppVec[i + 1]));
+            temp.emplace_back(std::move(ppVec[i + 3]));
+            retVec.emplace_back(std::move(temp));
         }
     }
     else if (ppVec.size() % 3 == 0) {
         // old-style wish
         for (int i = 0; i < ppVec.size(); i += 3) {
-            std::vector<PixPos> temp{ ppVec[i], ppVec[i + 1], ppVec[i + 2] };
-            retVec.emplace_back(temp);
+            std::vector<PixPos> temp;
+            temp.emplace_back(std::move(ppVec[i]));
+            temp.emplace_back(std::move(ppVec[i + 1]));
+            temp.emplace_back(std::move(ppVec[i + 2]));
+            retVec.emplace_back(std::move(temp));
         }
     }
     else {
@@ -101,7 +107,6 @@ std::string Importer::ExtractTextFromPix(Pix* image)
     // Save to std::string and remove special characters
     std::string output(m_tesseractOutputText ? m_tesseractOutputText : "");
     StripString(output);
-    ReplaceWeirdCharsInString(output);
     log(std::format("Extracted text: {}", output), Logger::DEBUG);
 
     if (m_tesseractOutputText) {
@@ -113,15 +118,15 @@ std::string Importer::ExtractTextFromPix(Pix* image)
 
 unsigned int Importer::ExtractRarityFromText(std::string& itemName)
 {
-    size_t pos = itemName.find("4-Star");
+    size_t pos = itemName.find(" 4");
     if (pos != std::string::npos) {
-        itemName = itemName.substr(0, pos - 2); // 2 chars for ' ('
+        itemName = itemName.substr(0, pos);
         return 4u;
     }
 
-    pos = itemName.find("5-Star");
+    pos = itemName.find(" 5");
     if (pos != std::string::npos) {
-        itemName = itemName.substr(0, pos - 2); // 2 chars for ' ('
+        itemName = itemName.substr(0, pos);
         return 5u;
     }
 
@@ -135,27 +140,23 @@ void Importer::StripString(std::string& str)
     result.reserve(str.size()); // Reserve enough space to avoid multiple reallocations
 
     for (size_t i = 0; i < str.size(); ++i) {
-        if (str[i] == '\n') {
-            if (i > 0 && str[i - 1] == '-') {
-                // Skip the newline
-                continue;
-            }
-            else {
-                // Replace newline with space
+        char ch = str[i];
+
+        // Check if character is an ASCII letter/digit or hpyhen/colon 
+        if (std::isalnum(ch) || ch == '-' || ch == ':') {
+            result += ch;
+        }
+        // Space handling (only allow one space and newline treatment)
+        else if (ch == ' ' || ch == '\n') {
+            if (!result.empty() && result.back() != ' ') {
                 result += ' ';
             }
         }
-        else if (str[i] == '\t' || str[i] == '\r') {
-            // Skip tabs and carriage returns
-            continue;
-        }
-        else if (str[i] == '\xE2\x80\x99') {
+        // Allow apostrophe or right single quotation mark first char
+        else if (ch == '\'' || (ch == '\xE2')) {
             result += '\'';
         }
-        else {
-            // Copy other characters
-            result += str[i];
-        }
+        // Skip any other characters (tabs, punctuation, etc.)
     }
 
     // Trim trailing space if exists
